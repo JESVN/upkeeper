@@ -1,0 +1,277 @@
+# Upkeep application registry.
+#
+# The shipped default. A user file at %LOCALAPPDATA%\Upkeep\apps.yaml overrides
+# this per app id and per settings key. Field reference: docs/config-schema.md.
+#
+# `# TBD:` marks a value nobody has confirmed with a probe. It stays marked until
+# the probe in docs/cookbook/verifying-a-release-source.md has confirmed it; a
+# row with an unverified source renders as `unknown` and never as a guess.
+# Paths and versions below were measured on 2026-09-17 (docs/environment.md).
+
+version: 1
+
+settings:
+  proxy: system            # system | none | "http://host:port"
+  concurrency: 4
+  timeout_s: 900
+  on_failure: continue     # continue | stop
+  retention: auto          # auto | none
+  uac: allow               # allow | mark-only
+  notify: toast            # toast | off
+
+apps:
+  # ── self-update-cli ────────────────────────────────────────────────────────
+
+  - id: omp
+    form: self-update-cli
+    display_name: omp
+    detect:
+      exe: "%LOCALAPPDATA%\\omp\\omp.exe"
+      args: ["--version"]
+      regex: "omp/([0-9][0-9.]*)"        # measured: `omp/18.2.4`
+    latest:
+      kind: self-check
+      args: ["update", "--check"]        # confirmed: `-c, --check` exists
+      regex: "([0-9]+\\.[0-9]+\\.[0-9]+)"  # TBD: confirm against real check output
+    update:
+      args: ["update"]
+      needs_proxy: true                  # Bun fetch ignores the system proxy
+      preflight: true
+      eta_guard_min: 14                  # the tool aborts at 15 minutes
+    verify:
+      expect: changed
+      # TBD: confirm the release repository before enabling sha256_from.
+    cleanup:
+      - glob: "%LOCALAPPDATA%\\omp\\omp.exe.*.bak"
+        keep_newest: 0                   # residue appears only across an update
+      - glob: "%USERPROFILE%\\.omp\\natives\\*"
+        keep_matching_version: true      # 179 MB belongs to the installed 18.2.4
+        skip_if_running: ["omp.exe"]
+      - glob: "%USERPROFILE%\\.omp\\run\\daemons\\*\\omp.browser.headless.profile\\*"
+        only:
+          - optimization_guide_model_store
+          - component_crx_cache
+          - WasmTtsEngine
+          - GrShaderCache
+          - ShaderCache
+          - GPUCache
+          - "Code Cache"
+          - Cache
+        protect: ["Default"]             # login state; never walked, never counted
+        skip_if_running: ["omp.exe"]
+
+  - id: pi
+    form: npm-global
+    display_name: pi
+    package: "@earendil-works/pi-coding-agent"   # verified: 0.85.1 installed
+    prefer: self-update
+    update:
+      args: ["update", "self"]
+      fallback: npm
+
+  - id: codex
+    form: self-update-cli
+    display_name: codex
+    detect:
+      exe: "%APPDATA%\\npm\\codex.cmd"   # TBD: an npm shim; see the shim rule in docs/execution-safety.md#spawning
+      args: ["--version"]
+      regex: "([0-9]+\\.[0-9]+\\.[0-9]+)"  # TBD: confirm output format (`codex-cli <version>`?)
+    latest:
+      kind: npm                          # verified: @openai/codex 0.154.0 installed
+    update:
+      args: ["update"]
+
+  - id: claude-code
+    form: self-update-cli
+    display_name: Claude Code
+    detect:
+      exe: "%APPDATA%\\npm\\claude.cmd"  # TBD: an npm shim
+      args: ["--version"]
+      regex: "([0-9]+\\.[0-9]+\\.[0-9]+)"  # TBD: confirm output format (`<version> (Claude Code)`)
+    latest:
+      kind: npm                          # verified: @anthropic-ai/claude-code 2.1.274
+    update:
+      args: ["update"]
+
+  # ── npm-global ─────────────────────────────────────────────────────────────
+
+  - id: copilot
+    form: npm-global
+    package: "@github/copilot"           # verified: 0.0.362
+
+  - id: mcporter
+    form: npm-global
+    package: "mcporter"                  # verified: 0.9.0
+
+  - id: opencli
+    form: npm-global
+    package: "@jackwener/opencli"        # verified: 1.8.7
+
+  - id: agent-browser
+    form: npm-global
+    package: "agent-browser"             # verified: 0.27.0
+
+  - id: 9router
+    form: npm-global
+    package: "9router"                   # verified: 0.4.71
+
+  - id: context-mode
+    form: npm-global
+    package: "context-mode"              # verified: 1.0.169
+
+  - id: model-verity
+    form: npm-global
+    package: "model-verity"              # verified: 0.2.0
+
+  # ── external-ui (detect and notify; Upkeep never runs these installers) ──
+
+  - id: pideck
+    form: external-ui
+    kind: electron
+    display_name: PiDeck
+    detect:
+      exe: "%LOCALAPPDATA%\\Programs\\PiDeck\\PiDeck.exe"   # measured: 0.7.6
+    latest:
+      kind: github
+      repo: "ayuayue/PiDeck"             # verified: latest v0.7.6 == installed 0.7.6
+    actions: [open-app, open-release-page]
+    cleanup:
+      - glob: "%LOCALAPPDATA%\\pi-desktop-updater\\*"
+        older_than_days: 7               # measured: 262,644,841 bytes
+        skip_if_running: ["PiDeck.exe"]
+
+  - id: cc-switch
+    form: external-ui
+    kind: tauri
+    display_name: CC Switch
+    detect:
+      exe: "G:\\CC Switch\\cc-switch.exe"   # measured: 3.20.3
+    latest:
+      kind: github
+      repo: "TBD"                        # TBD: locate the release repository
+    actions: [open-app, open-release-page]
+    cleanup:
+      - glob: "%TEMP%\\CC Switch-*-updater-*"
+        keep_newest: 0
+        quiet_period_s: 300              # an update in flight just created it
+        skip_if_running: ["cc-switch.exe"]
+
+  - id: clash-verge
+    form: external-ui
+    kind: tauri
+    display_name: Clash Verge
+    detect:
+      exe: "G:\\Clash Verge\\clash-verge.exe"   # measured: 2.3.2
+    latest:
+      kind: github
+      repo: "TBD"
+    actions: [open-app, open-release-page]
+    cleanup:
+      - glob: "%TEMP%\\Clash Verge-*-updater-*"
+        keep_newest: 0
+        quiet_period_s: 300
+        skip_if_running: ["clash-verge.exe"]
+
+  - id: cockpit-tools
+    form: external-ui
+    kind: tauri
+    display_name: Cockpit Tools
+    detect:
+      exe: "TBD"                         # TBD: locate the installed executable
+    latest:
+      kind: github
+      repo: "TBD"
+    actions: [open-app, open-release-page]
+    cleanup:
+      - glob: "%TEMP%\\Cockpit Tools-*-updater-*"
+        keep_newest: 0
+        quiet_period_s: 300
+        skip_if_running: ["Cockpit Tools.exe"]
+
+  - id: tuanjie-cowork
+    form: external-ui
+    kind: tauri
+    display_name: Tuanjie Cowork
+    detect:
+      exe: "TBD"
+    latest:
+      kind: github
+      repo: "TBD"
+    actions: [open-app, open-release-page]
+    cleanup:
+      - glob: "%TEMP%\\Tuanjie Cowork-*-updater-*"
+        keep_newest: 0
+        quiet_period_s: 300
+        skip_if_running: ["Tuanjie Cowork.exe"]
+
+  # ── green (portable; detect and link only) ─────────────────────────────────
+
+  - id: bcompare
+    form: green
+    display_name: Beyond Compare
+    detect:
+      exe: "E:\\Beyond_Compare_4.4.6.27483_64bit_Green\\BCompare\\BCompare.exe"   # measured: 4.4.6.27483
+    latest:
+      kind: url_regex
+      url: "TBD"                         # TBD: vendor download page
+      regex: "TBD"
+    actions: [open-download-page]
+
+  - id: apifox
+    form: green
+    display_name: Apifox
+    detect:
+      exe: "E:\\Apifox\\Apifox.exe"      # measured: 2.7.8
+    latest:
+      kind: url_regex
+      url: "TBD"
+      regex: "TBD"
+    actions: [open-download-page]
+
+  - id: burp-suite
+    form: green
+    display_name: Burp Suite
+    detect:
+      exe: "TBD"                         # TBD: locate the installed executable (2026.4.3 reported)
+    latest:
+      kind: url_regex
+      url: "TBD"
+      regex: "TBD"
+    actions: [open-download-page]
+
+  # ── choco (elevated; `choco outdated` covers every entry in one call) ──────
+
+  - id: choco-chocolatey
+    form: choco
+    display_name: Chocolatey
+    package: "chocolatey"                # measured: 2.2.2 -> 2.7.4
+    update:
+      needs_admin: true
+
+  - id: choco-python
+    form: choco
+    display_name: Python
+    package: "python"                    # measured: 3.11.4 -> 3.14.7
+    update:
+      needs_admin: true
+    # `python3` and `python311` are Chocolatey's own aliases for the same runtime;
+    # TBD: decide whether they are separate entries before adding them, or one
+    # upgrade will be attempted three times.
+
+  - id: choco-vcredist140
+    form: choco
+    display_name: VC++ Redistributable
+    package: "vcredist140"               # measured: 14.32.31332 -> 14.51.36247
+    update:
+      needs_admin: true
+
+  - id: choco-vs2019buildtools
+    form: choco
+    display_name: VS 2019 Build Tools
+    package: "visualstudio2019buildtools"   # measured: 16.11.17 -> 16.11.60
+    update:
+      needs_admin: true
+
+# Deferred: %LOCALAPPDATA%\SquirrelTemp (87,201 bytes) has no rule because no
+# managed application owns it. Give it one once the Squirrel-based application
+# it belongs to is identified, rather than attaching it to an unrelated app.

@@ -1,0 +1,10 @@
+# Line endings: LF in the repository and in every working tree.
+# The global core.autocrlf setting does not change these files.
+* text=auto eol=lf
+
+# Binaries (icons and installer assets land here in M0)
+*.ico binary
+*.png binary
+*.icns binary
+*.exe binary
+*.dll binary
