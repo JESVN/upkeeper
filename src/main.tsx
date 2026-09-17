@@ -1,0 +1,16 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+
+import App from "./App";
+import "./styles/tailwind.css";
+
+const container = document.getElementById("root");
+if (container === null) {
+  throw new Error("index.html must carry a #root element");
+}
+
+createRoot(container).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

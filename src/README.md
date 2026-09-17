@@ -4,6 +4,7 @@ React 19 + Vite + TypeScript + Tailwind v4. The UI presents state produced by th
 
 | Path | Owns |
 |---|---|
+| `main.tsx` / `App.tsx` | The React entry and the window shell: the title strip and the content area the panels mount into. The shell renders state it was given and invokes nothing on mount |
 | `ipc/` | The typed bridge to the core: one wrapper per command and per event, and the payload types mirrored from the Rust side |
 | `features/apps/` | The application list: rows, version pairs, badges, selection |
 | `features/updates/` | Batch actions and the live progress and log panel |

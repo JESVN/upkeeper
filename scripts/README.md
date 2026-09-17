@@ -4,9 +4,9 @@ Repo-local helpers. No product logic, and nothing the shipped application import
 
 | Script | Purpose |
 |---|---|
-| `doc-budgets.mjs` (M0) | Counts words against the ceilings in [docs/AGENTS.md](../docs/AGENTS.md#word-budgets), treating a CJK character as one word |
-| `check-links.mjs` (M0) | Resolves every relative Markdown link and anchor in the repository |
-| `notes-format.mjs` (M0) | Checks Agent Note headers, statuses, and path-encoded lifecycle/class folders |
+| `doc-budgets.mjs` | Counts word-equivalents against the ceilings in [docs/AGENTS.md](../docs/AGENTS.md#word-budgets), treating a CJK character as 0.6 of a word and leaving out markup. The ceiling table is parsed out of that document, so a ceiling has exactly one home |
+| `check-links.mjs` | Resolves every relative Markdown link and image, and every fragment against a heading slug or an explicit `id` in the target file, reproducing GitHub's slug rules including the suffix on a repeated heading |
+| `notes-format.mjs` | Checks Agent Notes against [.agents/notes/README.md](../.agents/notes/README.md): the `{lifecycle}/{class}/YYYY-MM-DD-topic-title.md` path, the header and its status, the `Archived:` date, and the sections that body type requires |
 
 Conventions for anything added here:
 

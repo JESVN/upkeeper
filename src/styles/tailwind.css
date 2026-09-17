@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/*
+ * Theme tokens. The complete set — the six row-state colours and the system
+ * accent correction layer — is owned by the visual identity document that
+ * docs/style-direction.md names; this file declares only what the shell
+ * renders today, at the values that direction fixed.
+ *
+ * Both modes live here rather than in two files, so a token cannot exist in
+ * one mode only. Mode follows the system ([style-direction.md](../../docs/style-direction.md#已确认约束)),
+ * which is what the bare `dark:` variant already means in Tailwind v4.
+ *
+ * Neutral steps are flexoki (MIT, Copyright © 2023 Steph Ango); the licence
+ * notice and the full ramp are written into the visual identity document.
+ */
+@theme {
+  --font-sans: "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI",
+    "Microsoft YaHei", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+
+  --color-paper: #fffcf0;
+  --color-paper-raised: #f2f0e5;
+  --color-ink: #100f0f;
+  --color-ink-muted: #575653;
+  --color-rule: #cecdc3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #1c1b1a;
+    --color-paper-raised: #282726;
+    --color-ink: #f2f0e5;
+    --color-ink-muted: #b7b5ac;
+    --color-rule: #403e3c;
+  }
+}
+
+/*
+ * The window is its own surface: the document behind it never scrolls, and a
+ * panel that overflows scrolls inside its own region.
+ */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
