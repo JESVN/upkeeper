@@ -59,7 +59,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 | `docs/config-schema.md` | 1,800 |
 | `docs/providers.md` | 1,700 |
 | `docs/ui.md` | 950 |
-| `docs/style-direction.md` | 6,200 |
+| `docs/style-direction.md` | 2,800 |
 | `docs/development.md` | 900 |
 | `docs/testing.md` | 950 |
 | Root `README.md` / `README.en.md` (front-page pair) | 2,200 each |
