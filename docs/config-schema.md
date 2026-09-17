@@ -29,7 +29,7 @@ The application registry: which apps Upkeep manages, how it detects their versio
 | `on_failure` | enum | `continue` (default), `stop` | Whether a failed update halts the rest of the batch |
 | `retention` | enum | `auto` (default), `none` | `auto` keeps a rollback copy only for forms that cannot roll back online |
 | `uac` | enum | `allow` (default), `mark-only` | Whether Upkeep may start an elevated helper or only hand over the command |
-| `notify` | enum | `toast` (default), `off` | Whether a settled run raises a notification |
+| `notify` | enum | `toast` (default), `off` | Whether a run the user started raises a notification when it settles. Nothing scans on its own, so a notification can never arrive by itself |
 
 ### App entry
 

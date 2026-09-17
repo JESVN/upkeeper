@@ -3,6 +3,7 @@
 These rules supplement the repo-wide [conventions](../AGENTS.md#约定). The ownership map is [README.md](README.md); the panels and their badges are defined in [docs/ui.md](../docs/ui.md).
 
 - **A component never calls `invoke` or `listen`.** All IPC goes through `src/ipc/`; a component imports a typed function and receives a typed result. A command or event name appearing outside `src/ipc/` is a bug.
+- **A panel never starts work on mount.** No effect may invoke a scan, an update, or a cleanup when it renders: the panel draws what the recorded state says and then waits for a user action ([interaction rules](../docs/ui.md#interaction-rules)). A `useEffect` that probes on mount is the bug this rule exists for.
 - **The UI renders state it was given.** It never computes a version comparison for a decision, never decides that an update is needed, and never touches a path or URL it constructed itself. Badges and labels are selected from the states Core reported.
 - **`features/<panel>/` owns its panel and nothing else.** One directory per panel — `apps`, `updates`, `cleanup`, `settings`, `history`, `notify` — each holding its own components and view models. A second panel importing from a sibling's internals means the shared part belongs in `components/` or `lib/`.
 - **`components/` stays presentational.** Props in, elements out: no data fetching, no formatting decisions, no copy that a panel might need to change.

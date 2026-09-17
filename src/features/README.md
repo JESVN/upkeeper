@@ -4,7 +4,7 @@ One directory per panel, matching the six panels in [docs/ui.md](../../docs/ui.m
 
 | Directory | Panel |
 |---|---|
-| `apps/` | Application list: rows, version pairs, badge selection, default selection |
+| `apps/` | Application list: rows, version pairs, badge selection, manual selection, and the unscanned empty state |
 | `updates/` | Batch actions, live progress rows, per-run log tail |
 | `cleanup/` | Rule groups, byte totals, the previewed path list, execution controls |
 | `settings/` | `settings:` fields and per-app enable toggles |

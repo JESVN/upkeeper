@@ -24,7 +24,7 @@ Three rules hold the layering:
 | Stage | Owns | Entry → exit |
 |---|---|---|
 | `config` | Loading and merging `apps.yaml`, resolving `%VAR%` paths, validating field combinations | file → `Registry { settings, apps }` |
-| `scan` | Running every enabled provider's `detect` and `latest` under its own timeout, with failure isolation and a concurrency limit | registry → `Vec<AppState>` + `scan://progress` per provider |
+| `scan` | Running every enabled provider's `detect` and `latest` under its own timeout, with failure isolation and a concurrency limit. Invoked only by the user's own `scan` call | registry → `Vec<AppState>` + `scan://progress` per provider |
 | `plan` | Deciding per app: needs update, needs elevation, needs proxy, needs the target closed, may be cleaned; assembling a `Plan` with a stable id | `AppState[]` + registry → `Plan` |
 | `exec` | Spawning children: per-child proxy env, `Stdio::null()` stdin, ANSI-stripped output streamed to the run log and to `update://progress`, timeout and process-tree cancellation | `Plan` → `Outcome[]` |
 | `verify` | Asserting the version changed (or a hash matched the expected asset) and recording `from` → `to` | `Outcome` → verified `Outcome` |
@@ -35,9 +35,13 @@ Three rules hold the layering:
 
 ### scan
 
+`scan` runs only when the `scan` command is invoked. Nothing triggers it implicitly — not the window lifecycle, not a focus change, not a timer, and not another stage. Launching the application reads `state.json` and renders it; a machine that has never scanned shows an empty list and a prompt.
+
 Every provider is independent: its own `tokio::time::timeout`, its own error slot. A failure marks that row `failed` with a reason and leaves every other row untouched. Concurrency defaults to `settings.concurrency` and applies to providers, not to applications, so a slow registry never blocks the local probes.
 
-Results are written to `state.json` with `checked_at`, and the UI renders staleness from that timestamp instead of re-probing on every window focus.
+Results are written to `state.json` with `checked_at`. That cache exists to render a previous result and its age — the UI never re-probes on focus, and no stage reads it to decide *whether* to update: that decision comes from the versions the current run observed.
+
+A single-row refresh is the same command with `apps: [<id>]`: one provider runs, the other rows keep their recorded values and `checked_at`.
 
 ### plan
 

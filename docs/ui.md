@@ -6,7 +6,7 @@ Six panels in one window. The UI renders state that Core produced and sends back
 
 | Panel | Shows | Reads |
 |---|---|---|
-| Application list | One row per app: current → latest version, state badge, available actions, rollback label | `scan` result, `scan://progress` |
+| Application list | One row per app: current → latest version, state badge, available actions, rollback label | `scan` result, `scan://progress`, or a recorded `state.json` and its age |
 | Progress and log | One line per app in the current run: phase, throughput, ETA, exit result, failure reason | `update://progress`, `run://settled` |
 | Cleanup | Per rule: matched count, byte total, and the path list behind it | `plan_clean` result, `clean://progress` |
 | Settings | Proxy, concurrency, timeout, failure policy, retention, UAC policy, per-app enable toggles | `settings` command |
@@ -33,12 +33,13 @@ Rollback label, shown next to the version pair: `可回滚` (a copy exists), `�
 - **A percentage is shown only when the child reported one.** Otherwise the row shows an indeterminate activity indicator; a fabricated progress bar is worse than none.
 - **`[取消]` cancels the run, not the row.** The whole process tree is killed and each in-flight app records `cancelled` — see [execution-safety.md](execution-safety.md#cancellation-and-teardown).
 - **Failure text is the tool's own last error line plus the exit code**, with `[打开日志]` on the row. The UI does not paraphrase a failure into advice.
-- **Staleness comes from `checked_at`.** The window shows how old the scan is and never re-probes on focus; a scan happens when the user asks for one.
-- **Default selection is conservative**: unattended-capable apps with an available update are checked; `external-ui` and `green` rows are unchecked, because updating them needs a human in the application's own UI.
-- **Cleanup defaults to nothing selected** and shows the reclaimable total regardless, so the first click is always a look rather than a delete.
+- **Nothing runs until the user asks.** No scan at launch, on focus, on a timer, or in the background: the window renders the recorded `state.json` and the age of its `checked_at`, and an unscanned machine shows an empty list with one `[检查更新]` prompt.
+- **Selection is manual.** A finished scan ticks nothing; `[全选可更新]` ticks and never executes; `[更新选中]` runs exactly the ticked rows. An update target the user did not choose does not exist.
+- **A row can be re-probed on its own.** `[刷新]` runs `scan` for that one application, so one provider runs and the other rows keep their recorded values and `checked_at`. On a failed row the same action is labelled `[重试]`.
+- **Staleness comes from `checked_at`.** The window shows how old the result is and never re-probes on focus; a scan happens when the user asks for one.
 
 ## Copy and notifications
 
 UI copy is Chinese and lives in one module under `src/lib/`; components import strings and never inline them, so a locale can be added without touching a component. Badge and label names above are the canonical keys.
 
-Notifications use `tauri-plugin-notification`. Windows requires a stable AppId for a non-packaged executable, so the installer creates a Start Menu shortcut and the notification is raised from that identity; an unpackaged dev run may not show a toast, and that is expected rather than a bug.
+Notifications use `tauri-plugin-notification` and report only a settled run the user started; the stable AppId they require comes from the installer's shortcut ([packaging](development.md#packaging)), so an unpackaged dev run may not show one.

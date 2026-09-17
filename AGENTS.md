@@ -8,6 +8,7 @@ Upkeep 是一个只跑 Windows 的桌面控制台，把本机的应用更新与�
 
 - **只做 Windows 11 x64。** 不写跨平台抽象，不写 `#[cfg(unix)]` 分支，不做可移植路径层；本机实测事实以 [docs/environment.md](docs/environment.md) 为准。
 - **副作用只发生在 Core。** UI 只渲染与选择；一切 spawn、删除、提权都在 `src-tauri` 里发生，且每个会改动系统的操作都必须走「计划 → 预览 → 执行」三段（[分层](docs/architecture.md#layering)）。
+- **不做自动扫描，也不自动勾选。** 启动、窗口聚焦、定时轮询都不扫描：打开窗口只渲染 `state.json` 里上次的结果与它的新鲜度，从未检查过就是空态；更新目标一律来自用户手动勾选或点击，「全选可更新」只勾选、不执行（[交互规则](docs/ui.md#interaction-rules)）。
 - **绝不驱动 GUI 应用的更新器。** `external-ui` 与 `green` 形态只做检测 + 徽标 + `[打开应用]` / `[下载页]`；Upkeep 永不运行 NSIS/MSI/安装器，永不写进应用的安装目录（[非目标](DESIGN.md#1-目标与非目标)）。
 - **代理每次都从注册表读，只注入子进程。** 读 `HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings` 的 `ProxyEnable` / `ProxyServer`；不写进父进程环境，不改注册表，端口不写死成 `10808`（[规则](docs/execution-safety.md#proxy-resolution)）。
 - **不是所有工具都读系统代理。** .NET 会自动继承；`gh`、`omp`（Bun fetch）、`curl`、`rustup`、`cargo` 不会，必须显式给 `HTTPS_PROXY` 或换镜像源（[实测表](docs/environment.md#proxy-behaviour-by-tool)）。
@@ -15,7 +16,7 @@ Upkeep 是一个只跑 Windows 的桌面控制台，把本机的应用更新与�
 - **清理只认 glob 白名单、带进程守卫、默认 dry-run。** [三条硬规则](docs/cleanup-rules.md#the-three-hard-rules)不是建议；目标进程在跑就整条规则跳过，绝不只跳过一个文件。
 - **一种形态一个 provider，一个 provider 一个文件。** 新形态 = 新增 `src-tauri/src/providers/*.rs` 实现 trait + 一条 [config/apps.yaml](config/apps.yaml) 条目，绝不在 `core/` 里开新分支（[操作手册](docs/cookbook/adding-a-provider.md)）。
 - **失败就地隔离。** 单个 provider 超时只让该行变红，不牵连扫描或批量（除非 `on_failure: stop`）（[scan](docs/architecture.md#scan)）。
-- **`DESIGN.md` 是冻结记录，不是当前权威。** 它保存 2026-09-17 的 v0.1 设计与当时的实测数字；当前行为由 `docs/` 负责，决定一旦被推翻就写一篇 [Agent Note](.agents/notes/README.md)。
+- **`DESIGN.md` 定稿前是活文档，定稿后冻结。** 它现在仍在评审（v0.x 草案）：设计要改就直接改它，版本 +1 并在「变更记录」留一行；M0 动工后它冻结在该版本，之后的改动进 [Agent Note](.agents/notes/README.md) 与 `docs/`，正文不再回改。
 - **保留 PowerShell 基准脚本。** `omp-clean.ps1` 与 `omp-maintain.ps1` 继续作为 CLI 兜底与行为基准；Upkeep 结果与它不一致时按 bug 处理，不构成删除它们的理由（[风险 6](DESIGN.md#9-风险与未决问题)）。
 - **未核实的东西不进 `config/apps.yaml`。** 版本源没经过探测确认就保持 `# TBD`，界面显示「未知」，绝不用猜出来的值（[操作手册](docs/cookbook/verifying-a-release-source.md)）。
 
@@ -85,7 +86,8 @@ pnpm run doc-budgets     # docs/AGENTS.md 中声明的字数上限
 - **取消要杀整棵进程树**，不是只杀直接子进程。
 - **每次更新后都必须校验** —— 版本变化或哈希断言，并记入历史；没有校验的更新不算成功（[verify](docs/architecture.md#verify)）。
 - **UI 文案集中在一个模块**（`src/lib/`），绝不内联在组件里（[UI 规则](src/AGENTS.md)）。
-- **注释与文档写完整契约，不写推理过程。** 保留行为、失败、时序、归属与安全事实；删掉步骤叙述与代码复述（[标准](docs/AGENTS.md#writing-rules)）。
+- **注释与文档写完整契约，不写推理过程**（[标准](docs/AGENTS.md#writing-rules)）。
+- **git 提交信息必须写中文。** 格式 `类型: 中文说明`，类型用 `feat` / `fix` / `docs` / `design` / `chore` / `refactor` / `test` 之一；标题与正文都用中文，不写英文描述（类型前缀保留英文是为了工具链兼容）。
 - **非平凡改动必须在同一次改动里补一篇 Agent Note** 并更新对应文档；只有机械或局部编辑可豁免（[范围](.agents/notes/README.md#when-to-write-one)）。
 - **`unsafe` 块必须注释它依赖的不变量**，且只允许出现在 `src/platform/`，其它地方一处都不许。
 

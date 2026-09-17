@@ -25,9 +25,9 @@ Every fact has one home — the tier whose job it is. Elsewhere, link there.
 | Subtree `AGENTS.md` (`src/`, `src-tauri/`) | Orders specific to that subtree | Repo-wide rules the root file already carries |
 | Subtree `README.md` | The ownership map for that directory: what each child owns and what it must not | Restated repo rules, copied field tables |
 | Skills (`.agents/skills/`) | Reusable workflows and decision standards an agent loads on demand | Product contracts and field references (→ `docs/`) |
-| [DESIGN.md](../DESIGN.md) | The frozen 2026-09-17 v0.1 design record and the measurements behind it | Anything current: a changed fact's home is `docs/`, and DESIGN.md is left alone |
+| [DESIGN.md](../DESIGN.md) | The design document while it is a draft: revised in place with a version bump and a 变更记录 row, together with the measurements behind it | Once the design is approved and M0 starts, it freezes at that version; later changes go to `docs/` and an Agent Note, and its body is left alone. Current behaviour never lives here |
 
-Placement: incident evidence → postmortems; rationale → Agent Notes; procedures → cookbooks; contracts → `docs/`; standing orders → root `AGENTS.md`; per-directory ownership → subtree READMEs.
+Placement: incident evidence → postmortems; rationale → Agent Notes; procedures → cookbooks; contracts → `docs/`; standing orders → root `AGENTS.md`; per-directory ownership → subtree READMEs; a design change → DESIGN.md while it is still a draft, and an Agent Note once it has frozen.
 
 ## Writing rules
 
@@ -49,7 +49,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 
 | Document | Ceiling |
 |---|---|
-| Root `AGENTS.md` | 1,550 |
+| Root `AGENTS.md` | 1,600 |
 | `docs/AGENTS.md` (this file) | 1,500 |
 | `docs/architecture.md` | 1,600 |
 | `docs/environment.md` | 950 |
@@ -57,7 +57,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 | `docs/cleanup-rules.md` | 1,000 |
 | `docs/config-schema.md` | 1,500 |
 | `docs/providers.md` | 1,100 |
-| `docs/ui.md` | 800 |
+| `docs/ui.md` | 850 |
 | `docs/development.md` | 900 |
 | `docs/testing.md` | 900 |
 | Root `README.md` / `README.en.md` (front-page pair) | 2,000 each |

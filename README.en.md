@@ -16,7 +16,7 @@
 
 ## What this is
 
-Upkeep runs entirely on this machine with no account, and makes no network request beyond the official sources it checks for versions and updates. It does three things: **see it** (installed vs latest in one screen), **update it** (batch updates for the forms that can update unattended, with progress, failure isolation, proxy injection, and UAC elevation), and **clean it** (a preview and a byte total before anything is deleted).
+Upkeep runs entirely on this machine with no account. It touches the network only for the official sources it checks for versions and updates, and only when you ask it to: nothing is scanned in the background. It does three things: **see it** (installed vs latest in one screen), **update it** (batch updates for the forms that can update unattended, with progress, failure isolation, proxy injection, and UAC elevation), and **clean it** (a preview and a byte total before anything is deleted).
 
 It manages five kinds of application whose update paths have nothing in common:
 
@@ -54,6 +54,7 @@ It manages five kinds of application whose update paths have nothing in common:
 ## ✨ Highlights
 
 - 🎛️ **Five forms, one list** — installed and latest versions side by side, with a badge and an open-app / download-page button for desktop applications.
+- 🖐️ **You start everything** — no automatic scan, no background polling, no pre-ticked rows: opening the window shows the previous result and how old it is, and an update target is always one you ticked.
 - ⚡ **Batch updates that report honestly** — per-row progress, one failure never takes down the batch, each process gets its own timeout, and cancel kills the whole process tree.
 - 🧹 **Preview before anything is deleted** — declarative glob rules with a process guard and stale-version comparison, and a "what, and how many bytes" list first.
 - 🛡️ **Deletion you can audit** — dry run by default, only glob-matched entries, login state explicitly protected, and the installed version never swept up.

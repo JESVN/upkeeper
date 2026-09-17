@@ -42,6 +42,8 @@ The usual arrangement — update first, clean as an afterthought — cannot work
 
 Upkeep does not drive a GUI application's updater. `external-ui` and `green` applications are detected, badged, and given `[打开应用]` or `[下载页]`; the installer is never started and nothing inside an install directory is ever written. Driving those updaters would require racing a self-updater in the same directory for a benefit the user gets anyway by clicking the badge.
 
+Work is user-initiated: a scan runs only when the user asks for one, nothing is ticked on their behalf, and no notification can arrive unprompted. That contract, with its rationale and rejected alternatives, is owned by [scan and update are user-initiated](2026-09-17-user-initiated-scan-and-selection.md).
+
 ## Alternatives considered
 
 - **`topgrade` as the whole solution.** Its `--cleanup` is a global phase with hardcoded per-manager knowledge, and its `[commands]` hooks are shell commands rather than a declarative rule with guards and byte accounting. It cannot clean residue from applications it did not install, which is the majority of the 661 MB. Kept as a design reference for hooks and dry-run.
