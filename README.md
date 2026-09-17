@@ -4,13 +4,13 @@
 
 **只跑 Windows 的本地桌面控制台：把机器上所有形态的应用更新收进一个界面 —— 各种包管理器与生态、自带更新器的桌面应用、绿色软件，以及任何能用命令表达的更新方式；更新器留下的残留也在这里安全回收。**
 
-![Status](https://img.shields.io/badge/status-skeleton-orange)
+![Status](https://img.shields.io/badge/status-M0%20shell-yellow)
 ![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-lightgrey)
 ![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Rust](https://img.shields.io/badge/Rust-stable-black)
 
-> 仓库当前是**骨架**：有目录、契约与文档，但没有 `Cargo.toml`、没有 `package.json`、本机未装 Rust 工具链。界面与命令由 M0–M4 逐步落地，见 [里程碑](#-里程碑)。
+> 仓库当前停在 **M0**：Rust 工具链、Tauri v2 + React 19 + Vite + Tailwind v4 脚手架与三个文档门禁脚本已落地，`pnpm tauri dev` 能起窗口；扫描、更新与清理尚未开始，见 [里程碑](#-里程碑)。
 
 ---
 
@@ -75,7 +75,7 @@ Upkeep 是纯本机运行、不带账号的桌面工具，只在你点下「检�
 ## 🏗 工作原理
 
 ```txt
-UI（React）     六个面板：只渲染状态、只发计划
+UI（React）     七个面板：只渲染状态、只发计划
    │  IPC       Tauri 命令 + 事件（scan://progress 等）
 Core（Rust）    config → scan → plan → exec → verify → clean → history
    │             providers/* 一种形态一个文件 · platform/* 唯一碰 Win32 / 注册表 / 进程的地方
@@ -104,18 +104,18 @@ Core（Rust）    config → scan → plan → exec → verify → clean → his
 
 **暂无 Release。** M0 之后由 `pnpm tauri build` 产出 NSIS / MSI；未签名，首次运行会有 SmartScreen 提示（与同类自更新工具相同）。
 
-前提（本机已验证）：Windows 11 x64 · MSVC 14.44 + VS2019 BuildTools · Windows SDK 19041+ · WebView2 153 · Node 24 / npm 12 · G: 剩余 127 GB；**Rust 工具链未装**（M0 安装，约 1.5–2 GB）。
+前提（本机已验证）：Windows 11 x64 · MSVC 14.44 + VS2019 BuildTools · Windows SDK 19041+ · WebView2 153 · Node 24 / npm 12 · Rust 工具链 rustup 1.29 / rustc 1.98（`stable-x86_64-pc-windows-msvc`，装在用户目录默认位置）· G: 剩余 123 GB（其中 `src-tauri/target` 占 2.4 GB）。
 
-> ⚠️ `rustup` 与 `cargo` 不读 Windows 系统代理，首次构建前给该进程导出 `HTTPS_PROXY` 或换镜像源，步骤见 [docs/development.md](docs/development.md#bootstrap-without-a-working-system-proxy)。
+> ⚠️ `rustup` 与 `cargo` 不读 Windows 系统代理：安装工具链时给它单独导出 `HTTPS_PROXY`，拉包则走 rsproxy 镜像（`~/.cargo/config.toml`）。步骤见 [docs/development.md](docs/development.md#bootstrap-without-a-working-system-proxy)。
 
 ---
 
 ## 🧰 快速开始（从源码运行）
 
-以下命令由 M0 建立；今天 clone 下来只有文档与契约。
+工具链与脚手架已就位；换台机器从零开始时按下面走。
 
 ```powershell
-# git 与 rustup/cargo 都不自动走系统代理，先从注册表读出导出给本进程
+# 只装工具链时需要：rustup/cargo 不自动走系统代理，先从注册表读出导出给本进程
 $proxy = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings').ProxyServer
 $env:HTTPS_PROXY = "http://$proxy"; $env:HTTP_PROXY = $env:HTTPS_PROXY
 
@@ -125,7 +125,7 @@ pnpm install
 pnpm tauri dev
 ```
 
-日常命令：`pnpm tauri build` 打包 · `pnpm typecheck` / `pnpm test` 前端 · `cargo fmt --check` / `cargo clippy -- -D warnings` / `cargo test`（在 `src-tauri/` 内执行）· `pnpm run doc-budgets` 校验文档字数上限。
+日常命令：`pnpm tauri build` 打包 · `pnpm typecheck` / `pnpm test` 前端 · `cargo fmt --check` / `cargo clippy -- -D warnings` / `cargo test`（在 `src-tauri/` 内执行）· `pnpm run doc-budgets` / `check-links` / `notes-format` 三个文档门禁。
 
 ---
 

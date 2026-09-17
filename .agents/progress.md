@@ -22,34 +22,56 @@
 
 ## 当前
 
-**M0 · 步骤 0/5 · 尚未开工**（工具链未安装）
+**M0 完成 · M1 未开工。** 工具链、Tauri v2 脚手架与三个文档门禁都已落地并跑过；扫描、更新、清理尚无代码。
 
 ## 已完成
 
-- [x] 设计与契约定稿到 v0.3 — [DESIGN.md](../DESIGN.md) 与 5 篇 [Agent Note](notes/proposed/architecture/)
+- [x] 设计与契约定稿到 v0.3 — [DESIGN.md](../DESIGN.md) 与 5 篇 [Agent Note](notes/proposed/architecture/)（设计本身已按规则冻结，见下）
 - [x] 视觉风格方向定稿 — [docs/style-direction.md](../docs/style-direction.md)，调研证据在 [调研记录](notes/proposed/architecture/2026-09-17-ui-reference-survey.md)
 - [x] 文档体系与门禁规则建立 — [AGENTS.md](../AGENTS.md)、[docs/AGENTS.md](../docs/AGENTS.md)、4 个 skill
 - [x] 会话交接机制建立 — [/wrapup](../.pi/prompts/wrapup.md) 落盘、[upkeeper-handoff](skills/upkeeper-handoff/SKILL.md) 接手、本文件记状态
-- [x] 仓库初始化并推送 — 远端 `JESVN/upkeeper`，最近提交 `12315ab`
+- [x] 仓库初始化并推送 — 远端 `JESVN/upkeeper`
+- [x] **M0 工具链** — `winget install Rustlang.Rustup` → rustup 1.29.1 / rustc 1.98.1 / `stable-x86_64-pc-windows-msvc`；crates 走 rsproxy 镜像（`%USERPROFILE%\.cargo\config.toml`）。证据与命令见 [M0 Agent Note](notes/implemented/process/2026-09-18-m0-toolchain-and-scaffold.md#verification)
+- [x] **M0 脚手架** — Tauri v2 + React 19 + Vite 8 + TS 6 + Tailwind v4 落到根、`src/`、`src-tauri/`（未新建子工程）；`pnpm typecheck`、`pnpm build`、`cargo build`（1m39s）全绿
+- [x] **M0 验收：`pnpm tauri dev` 起窗口** — 观察到窗口标题 `Upkeep`、`MainWindowHandle` 非零；随后进程树被杀干净
+- [x] **三个文档门禁脚本** — `pnpm run doc-budgets`（PASS）、`check-links`（PASS，370 链接 / 56 文件）、`notes-format`（**红，1 条发现，见未决**）
 
 ## 未决
 
-- **Tailwind v4 的 `@theme` 分不分两套文件**：跟随系统明暗（[style-direction.md](../docs/style-direction.md) 约束 1）意味着两套值都要定义，是分开两个文件还是单文件加媒体查询，需在搭前端时决定。
-- **视觉令牌尚未成文**：`docs/visual-identity.md` 还没写（按 design.md 格式 + 对比度实测表），写它是 M0 之后、写组件之前的事。
-- **门禁脚本还不存在**：`docs/AGENTS.md` 声明的字数上限目前靠人工核对，M0 要把 `doc-budgets`、`check-links`、`notes-format` 补进 `scripts/`。
+- **`notes-format` 为红：** [调研记录](notes/proposed/architecture/2026-09-17-ui-reference-survey.md) 没有 `## Proposal` 小节（它的等价内容是 `## How the references combine`），而 [.agents/notes/README.md](notes/README.md) 的 `proposed/` 表格把它列为必需。两种修法见「待用户确认」。
+- **视觉令牌尚未成文**：`docs/visual-identity.md` 还没写（design.md 格式 + 对比度实测表）。`src/styles/tailwind.css` 目前只声明外壳用到的那几个值，六个状态色与强调色修正层都还没进代码。
+- **应用图标仍是 Tauri 默认图标**：`src-tauri/icons/*` 是脚手架生成的，等视觉识别文档写好后替换。
+- **前端测试栏是空的**：`pnpm test`（vitest 5）0 个测试文件、`passWithNoTests` 下返回 0。M1 起按 [docs/testing.md](../docs/testing.md#layout) 补 view model 测试。
+- **README 里程碑表只到 M4**（[DESIGN.md](../DESIGN.md#8-里程碑与验收标准) 有 M5），双语两份都一样；没擅自补行。
 
 ## 待用户确认
 
-**无人值守期间不得在本节留空而停下工作**：能绕开就先做没被阻塞的部分，绕不开就跳到下一项，并把原因写清楚。醒来后逐条回复即可。
-
-（空）
+- **调研笔记的格式冲突（唯一一条红灯）**：给 `2026-09-17-ui-reference-survey.md` 补/改名一节 `## Proposal`，还是在 [.agents/notes/README.md](notes/README.md) 里为「证据记录型」笔记写明例外？两条都动到决策记录或格式标准，无人值守期间没碰。
+- **README 里程碑表要不要补 M5 行**（`winget` 万能接入），补则中英两份同改。
+- **应用图标**：是否现在就用 Tauri 默认图标凑合到 M5，或提前做一版。
+- **两个 commit 还在本地**（`a05c186` 及其后的 docs 落盘提交；远端仍是 `097e941`）：push 是对外动作，无人值守期间不自选。
+- **M1 会话由谁拉起**：配方 `pi --model opencode-go/deepseek-v4.1-flash --thinking max -p "/skill:upkeeper-handoff 无人值守"`（已用 `pi --list-models deepseek` 确认该 provider 与模型存在，`max` 档在其 `thinkingLevelMap` 里）。没自选：它会以无界面方式长时间改仓库并消耗额度，属于「涉外」，按引用规则留给用户拍板。
 
 ## 自主决定
 
-无人值守期间由代理自选的**可逆**决策，一条一行：选了哪个、为什么、怎么改回去。用户醒来后可否决。
-
-- 本轮无（交接机制刚建立，尚未进入无人值守开发）
+- **DESIGN.md 冻结在 v0.3**，并按根规则改了根 `AGENTS.md` 的状态行、命令段与冻结说明，及 README 双语状态行、前提与快速开始。理由：根规则写明「M0 动工后冻结」，M0 已动工。改回：把 DESIGN.md 表头「版本/状态」两行改回「v0.3（草案，待审阅）/设计评审中」。
+- **Tailwind 单文件 + `@media (prefers-color-scheme: dark)`**（原「未决」项）：一份文件里两套值，token 不可能只存在于一种模式。改回：拆成 `light.css`/`dark.css` 并在构建期切换。
+- **工具链位置留默认**（`RUSTUP_HOME`/`CARGO_HOME` 在 C: 用户目录）：[docs/environment.md](../docs/environment.md#where-rust-keeps-its-files) 已论证空间不是约束、C: 盘更快。改回：卸载重装并预先设两个环境变量。
+- **crates 用 rsproxy 镜像而不是每次导出代理**：镜像不受代理端口漂移影响。改回：删掉 `%USERPROFILE%\.cargo\config.toml`。
+- **脚手架合并进既有目录，不新建子工程**；窗口 1080×720（最小 760×520）保留系统标题栏；标识符 `com.jesvn.upkeep`；bundle 目标 `nsis` + `msi`；`crate-type` 只留 `rlib`（去掉移动端入口）。改回：都是配置文件里的一两行。
+- **门禁脚本按各自文档实现**：`doc-budgets` 从 `docs/AGENTS.md` 解析上限表（避免上限有两份），`check-links` 复刻 GitHub 的 slug 规则，`notes-format` 按 `notes/README.md` 强制必需小节 —— 所以它对调研笔记报红而不是放过。
+- **顺手修正的事实性文案**：README 双语的「六个面板」→「七个面板」（[docs/ui.md](../docs/ui.md) 是七个）、[docs/environment.md](../docs/environment.md) 的工具链与磁盘实测行、[pre-push skill](skills/upkeeper-pre-push-checks/SKILL.md) 里「M0 尚未创建 `Cargo.toml`」的段落、[scripts/README.md](../scripts/README.md) 里「CJK 按一个词计」的错述。
 
 ## 下一步
 
-**跑 `rustup --version` 确认工具链是否已装**；未装则按 [docs/development.md#bootstrap-without-a-working-system-proxy](../docs/development.md#bootstrap-without-a-working-system-proxy) 的步骤安装（必须先按注册表读代理，`rustup`/`cargo` 不读系统代理）。
+**M1：只读扫描 + 应用列表 + 版本对比 + 历史 + 通知**（验收见 [docs/testing.md](../docs/testing.md#required-evidence-per-milestone) 的 M1 行：版本全对、只读可自证、启动不产生子进程与出网、单行刷新不牵连其它行）。
+
+建议的第一步，按 [docs/architecture.md](../docs/architecture.md#stages) 的顺序：
+
+1. `src-tauri/src/state/` 的路径解析（`UPKEEP_HOME` / `%LOCALAPPDATA%\Upkeep`）与 `state.json` 原子写、`history.jsonl` 追加 —— 后面每个阶段都要用。
+2. `core/config`：读 `config/apps.yaml`、解 `%VAR%`、按 [docs/config-schema.md](../docs/config-schema.md) 校验；先用现成的 [config/apps.yaml](../config/apps.yaml)。
+3. `providers/mod.rs`（trait + `Form` + 注册表）与第一批 provider：`self-update-cli`（`omp`）与 `manager`（npm 全局），`latest` 来源链按 [docs/providers.md](../docs/providers.md)。
+4. `core/scan` + 单行刷新，`commands/` 只做校验与事件，`src/ipc/` 镜像载荷类型。
+5. 只读自证的测试：对受管目录在扫描前后取哈希并比对（[docs/testing.md](../docs/testing.md#required-evidence-per-milestone)），以及「启动不 spawn、不出网」的测试。
+
+先读：`src-tauri/AGENTS.md` · `src/AGENTS.md` · [docs/architecture.md](../docs/architecture.md) · [docs/providers.md](../docs/providers.md) · [docs/config-schema.md](../docs/config-schema.md) · [docs/ui.md](../docs/ui.md)（行状态与徽标）。

@@ -46,7 +46,7 @@ Placement: incident evidence → postmortems; rationale → Agent Notes; procedu
 
 ## Word budgets
 
-The gate counts word-equivalents, not bytes: western text by whitespace, each CJK character as 0.6 of a word (1.7 characters ≈ one English word, approximating their relative tokenizer cost). The script `scripts/doc-budgets.mjs` and the `doc-budgets` command arrive in M0; until then the ceilings are reviewed by hand.
+The gate counts word-equivalents, not bytes: western text by whitespace, each CJK character as 0.6 of a word (1.7 characters ≈ one English word, approximating their relative tokenizer cost). `pnpm run doc-budgets` parses this table and compares every file against its ceiling; the counting rule and what it leaves out are in [scripts/README.md](../scripts/README.md).
 
 | Document | Ceiling |
 |---|---|

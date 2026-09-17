@@ -16,7 +16,7 @@ git status --short --branch
 ls src-tauri/Cargo.toml package.json 2>/dev/null
 ```
 
-Until M0 has created `Cargo.toml`, `package.json`, and the toolchain, the only runnable check is a documentation review: link resolution, budget counting, and the [slop audit](../upkeeper-doc/SKILL.md#audit-a-document). Say that plainly instead of reporting a build that was never possible.
+M0 put the toolchain, `src-tauri/Cargo.toml`, and the `package.json` command surface in place, so a missing one is a broken checkout rather than an unstarted milestone: say which check could not run and why instead of reporting a build that never happened.
 
 ## Select the narrowest evidence
 

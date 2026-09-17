@@ -1,6 +1,6 @@
 # Environment facts
 
-Measured on this machine on 2026-09-17. These are the design's evidence: when one drifts, re-measure it here — [DESIGN.md](../DESIGN.md) keeps the v0.1 numbers as they stood when the design was written, and this file is the current truth.
+Measured on this machine on 2026-09-17; the toolchain and disk rows were re-measured on 2026-09-18 when M0 installed them. These are the design's evidence: when one drifts, re-measure it here — [DESIGN.md](../DESIGN.md) keeps the v0.1 numbers as they stood when the design was written, and this file is the current truth.
 
 ## Application inventory
 
@@ -88,12 +88,12 @@ Upkeep's own HTTP reads the registry and builds its client with an explicit prox
 | Windows SDK | 10.0.19041, 22621, 26100 |
 | WebView2 runtime | 153.0.4234.32 |
 | Node / npm | v24.18.0 / 12.0.0 |
-| Disk | C: 170.8 GB free (Samsung 970 EVO Plus NVMe), G: 126.3 GB free (KINGBANK KP230) |
-| Rust toolchain | not installed — M0 installs rustup (measured download 118 MB: rustup-init 12.1 + rustc 68 + rust-std 22 + cargo 9.8 + clippy 3.8 + rustfmt 2.5) |
+| Disk | C: 168 GB free (Samsung 970 EVO Plus NVMe), G: 123.8 GB free (KINGBANK KP230) — `src-tauri/target` holds 2.4 GB of the G: figure |
+| Rust toolchain | rustup 1.29.1, rustc/cargo 1.98.1, `stable-x86_64-pc-windows-msvc` — installed 2026-09-18 by `winget install Rustlang.Rustup` with `HTTPS_PROXY` exported for the process. `%USERPROFILE%\.rustup` is 1.5 GB, `%USERPROFILE%\.cargo` 388 MB; the crates index resolves through the rsproxy mirror in `%USERPROFILE%\.cargo\config.toml` |
 
 ### Where Rust keeps its files
 
-`RUSTUP_HOME` (`%USERPROFILE%\.rustup`, the toolchain, ~1.5–2 GB) and `CARGO_HOME` (`%USERPROFILE%\.cargo`, the registry cache, ~1–2.5 GB) default to the user profile on C:. This machine keeps that default:
+`RUSTUP_HOME` (`%USERPROFILE%\.rustup`, the toolchain, 1.5 GB here) and `CARGO_HOME` (`%USERPROFILE%\.cargo`, the registry cache, 388 MB) sit in the user profile on C: — the default, and where the toolchain was installed:
 
 - **Space is not the constraint.** 3–5 GB against 170 GB free on C:, and the largest single directory — `src-tauri/target` at 3–5 GB — is already on G:.
 - **C: is the faster disk.** Samsung 970 EVO Plus versus the KINGBANK KP230 holding G:. Rust builds are random-I/O heavy and the registry cache is read on every build.

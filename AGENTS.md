@@ -1,8 +1,8 @@
 # AGENTS.md
 
-Upkeep 是一个只跑 Windows 的桌面控制台，把本机的应用更新与「更新残留清理」收进同一个界面：一屏看清哪些应用有新版本，能无人值守的形态批量更新，并把更新器留下的垃圾安全回收。改动 `src-tauri/src/` 之前先读 [docs/architecture.md](docs/architecture.md)；写文档遵循 [docs/AGENTS.md](docs/AGENTS.md)；[DESIGN.md](DESIGN.md) 是冻结的 v0.1 设计记录。
+Upkeep 是一个只跑 Windows 的桌面控制台，把本机的应用更新与「更新残留清理」收进同一个界面：一屏看清哪些应用有新版本，能无人值守的形态批量更新，并把更新器留下的垃圾安全回收。改动 `src-tauri/src/` 之前先读 [docs/architecture.md](docs/architecture.md)；写文档遵循 [docs/AGENTS.md](docs/AGENTS.md)；[DESIGN.md](DESIGN.md) 是冻结在 v0.3 的设计记录。
 
-仓库状态：仅骨架。没有工具链，没有 `Cargo.toml`，没有 `package.json` —— 下面每条命令与路径都是 M0 必须满足的契约，今天还跑不起来（[里程碑](DESIGN.md#8-里程碑与验收标准)）。
+仓库状态：停在 M0。工具链、Tauri 外壳与三个文档门禁已就位（`pnpm tauri dev` 能起窗口），扫描与更新从 M1 开始（[里程碑](DESIGN.md#8-里程碑与验收标准)）。
 
 ## 常驻规则
 
@@ -16,7 +16,7 @@ Upkeep 是一个只跑 Windows 的桌面控制台，把本机的应用更新与�
 - **清理只认 glob 白名单、带进程守卫、默认 dry-run。** [三条硬规则](docs/cleanup-rules.md#the-three-hard-rules)不是建议；目标进程在跑就整条规则跳过，绝不只跳过一个文件。
 - **模式是「机制」，不是「应用清单」。** 加一个应用只改一条 [config/apps.yaml](config/apps.yaml) 条目；加一个生态只加一行管理器表；只有真正的新机制才写 `providers/*.rs`。`declarative` 是零代码兜底，绝不在 `core/` 里开 per-app 分支（[契约](docs/providers.md)）。
 - **失败就地隔离。** 单个 provider 超时只让该行变红，不牵连扫描或批量（除非 `on_failure: stop`）（[scan](docs/architecture.md#scan)）。
-- **`DESIGN.md` 定稿前是活文档，定稿后冻结。** 它现在仍在评审（v0.x 草案）：设计要改就直接改它，版本 +1 并在「变更记录」留一行；M0 动工后它冻结在该版本，之后的改动进 [Agent Note](.agents/notes/README.md) 与 `docs/`，正文不再回改。
+- **`DESIGN.md` 已冻结在 v0.3（M0 动工）。** 正文不再回改；设计要改就写 [Agent Note](.agents/notes/README.md) 并同步受影响的 `docs/` 页，冻结前的版本与修订见其「变更记录」。
 - **保留 PowerShell 基准脚本。** `omp-clean.ps1` 与 `omp-maintain.ps1` 继续作为 CLI 兜底与行为基准；Upkeep 结果与它不一致时按 bug 处理，不构成删除它们的理由（[风险 6](DESIGN.md#9-风险与未决问题)）。
 - **未核实的东西不进 `config/apps.yaml`。** 版本源没经过探测确认就保持 `# TBD`（界面显示「未知」），管理器的命令没在真实机器上跑过就不写进管理器表 —— 不许猜；`discover` 的候选要如实标注证据与建议形态（[操作手册](docs/cookbook/verifying-a-release-source.md)）。
 
@@ -39,7 +39,7 @@ src-tauri/                Rust 内核（子树规则：src-tauri/AGENTS.md）
 
 ## 命令
 
-这套命令由 M0 建立；在那之前它们都不存在。完整清单、依赖与代理/镜像步骤见 [docs/development.md](docs/development.md)：`pnpm install && pnpm tauri dev`（开发窗口，需 Rust 工具链）· `pnpm tauri build`（NSIS / MSI）· `pnpm typecheck && pnpm test` · `cargo fmt --check && cargo clippy -- -D warnings && cargo test`（在 `src-tauri/` 内）· `pnpm run doc-budgets`。
+完整清单、依赖与代理/镜像步骤见 [docs/development.md](docs/development.md)：`pnpm install && pnpm tauri dev`（开发窗口）· `pnpm tauri build`（NSIS / MSI）· `pnpm typecheck && pnpm test` · `cargo fmt --check && cargo clippy -- -D warnings && cargo test`（在 `src-tauri/` 内）· `pnpm run doc-budgets` / `check-links` / `notes-format` 三个文档门禁。
 
 `rustup` 与 `cargo` 不读 Windows 系统代理：首次构建前给该进程单独导出 `HTTPS_PROXY`，或配置镜像源（[步骤](docs/development.md#bootstrap-without-a-working-system-proxy)）。
 

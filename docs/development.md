@@ -68,6 +68,8 @@ cargo fmt --check               # in src-tauri/
 cargo clippy -- -D warnings
 cargo test                      # core + provider tests
 pnpm run doc-budgets            # word ceilings from docs/AGENTS.md
+pnpm run check-links            # every relative Markdown link and anchor resolves
+pnpm run notes-format           # Agent Note path, header, status, and sections
 ```
 
 Watch the Cargo build directory: `src-tauri/target` grows to several GB and must never be committed or cleaned by an Upkeep rule.

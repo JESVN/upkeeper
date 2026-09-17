@@ -4,13 +4,13 @@
 
 **A local Windows-only desktop console: every kind of application update on the machine in one window — package managers and ecosystems, self-updating desktop applications, portable applications, and anything else expressible as a command line; plus safe reclamation of the residue those updaters leave behind.**
 
-![Status](https://img.shields.io/badge/status-skeleton-orange)
+![Status](https://img.shields.io/badge/status-M0%20shell-yellow)
 ![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-lightgrey)
 ![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB)
 ![React](https://img.shields.io/badge/React-19-61DAFB)
 ![Rust](https://img.shields.io/badge/Rust-stable-black)
 
-> The repository is a **skeleton**: directories, contracts, and documentation exist, but there is no `Cargo.toml`, no `package.json`, and no Rust toolchain on this machine yet. Everything below lands across M0–M4 — see [Milestones](#-milestones).
+> The repository stands at **M0**: the Rust toolchain, a Tauri v2 + React 19 + Vite + Tailwind v4 scaffold, and three documentation gates are in place, and `pnpm tauri dev` opens a window. Scanning, updating, and cleanup have not started — see [Milestones](#-milestones).
 
 ---
 
@@ -75,7 +75,7 @@ Cleanup's three hard rules: **only glob-matched entries**, **a running target sk
 ## 🏗 How it works
 
 ```txt
-UI (React)      six panels: renders state, sends plans
+UI (React)      seven panels: renders state, sends plans
    │  IPC       Tauri commands + events (scan://progress …)
 Core (Rust)     config → scan → plan → exec → verify → clean → history
    │            providers/* one file per mechanism + the manager table · platform/* the only Win32, registry, process code
@@ -104,18 +104,19 @@ Required evidence: [docs/testing.md](docs/testing.md). Full acceptance criteria:
 
 **No release yet.** M0 produces installers through `pnpm tauri build` (NSIS / MSI). The build is unsigned, so SmartScreen warns on first run — the same situation as the other self-updating tools on this machine.
 
-Prerequisites, already verified here: Windows 11 x64 · MSVC 14.44 + VS2019 BuildTools · Windows SDK 19041+ · WebView2 153 · Node 24 / npm 12 · 127 GB free on G: — and **no Rust toolchain yet** (M0 installs it, ~1.5–2 GB).
+Prerequisites, already verified here: Windows 11 x64 · MSVC 14.44 + VS2019 BuildTools · Windows SDK 19041+ · WebView2 153 · Node 24 / npm 12 · Rust toolchain rustup 1.29 / rustc 1.98 (`stable-x86_64-pc-windows-msvc`, installed in the default location under the user profile) · 123 GB free on G:, 2.4 GB of it now the Cargo target directory.
 
-> ⚠️ `rustup` and `cargo` do **not** read the Windows system proxy. Before the first build, export `HTTPS_PROXY` for those processes or switch to a mirror: [docs/development.md](docs/development.md#bootstrap-without-a-working-system-proxy).
+> ⚠️ `rustup` and `cargo` do **not** read the Windows system proxy: installing the toolchain needs `HTTPS_PROXY` exported for that process, and crates come from the rsproxy mirror (`~/.cargo/config.toml`). Procedure: [docs/development.md](docs/development.md#bootstrap-without-a-working-system-proxy).
 
 ---
 
 ## 🧰 Quick start (from source)
 
-These commands arrive with M0; cloning today gives you documentation and contracts only.
+The toolchain and the scaffold are in place; start here when setting the project up from scratch on a new machine.
 
 ```powershell
-# Neither git nor rustup/cargo uses the system proxy: read it from the registry and export it
+# Only needed to install the toolchain: rustup/cargo ignore the system proxy,
+# so read it from the registry and export it for that process
 $proxy = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings').ProxyServer
 $env:HTTPS_PROXY = "http://$proxy"; $env:HTTP_PROXY = $env:HTTPS_PROXY
 
@@ -125,7 +126,7 @@ pnpm install
 pnpm tauri dev
 ```
 
-Day to day: `pnpm tauri build` to bundle · `pnpm typecheck` / `pnpm test` for the frontend · `cargo fmt --check` / `cargo clippy -- -D warnings` / `cargo test` inside `src-tauri/` · `pnpm run doc-budgets` to check documentation ceilings.
+Day to day: `pnpm tauri build` to bundle · `pnpm typecheck` / `pnpm test` for the frontend · `cargo fmt --check` / `cargo clippy -- -D warnings` / `cargo test` inside `src-tauri/` · `pnpm run doc-budgets` / `check-links` / `notes-format` for the documentation gates.
 
 ---
 
