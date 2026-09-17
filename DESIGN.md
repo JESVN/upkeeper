@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| 版本 | v0.2（草案，待审阅） |
+| 版本 | v0.3（草案，待审阅） |
 | 日期 | 2026-09-17 |
 | 目标平台 | Windows 11（x64） |
 | 项目路径 | `G:\AIProjects\upkeeper` |
@@ -14,17 +14,18 @@
 ## 1. 目标与非目标
 
 ### 目标
-把本机形态各异的应用更新与"更新残留清理"收敛到一个统一的桌面界面里，解决三件事：
+把本机形态各异的应用更新与"更新残留清理"收敛到一个统一的桌面界面里，解决四件事：
 
 1. **看得见**：一屏看到哪些应用有新版本（当前版本 vs 最新版本）。
-2. **一键更新**：能自动更新的形态（CLI 类）批量更新，带实时进度、代理注入与 UAC 提权。
+2. **一键更新**：能自动更新的形态批量更新，带实时进度、代理注入与 UAC 提权。
 3. **残留清理**：把各更新器留下的垃圾（实测约 661 MB）纳管，安全地回收。
+4. **接得进（万能）**：任何更新方式都能纳管 —— 加一个应用只改 `apps.yaml`，不改代码；本机还没有的生态也只加一行管理器表。
 
 ### 非目标
 - 不做 Electron/Tauri 桌面应用的**静默驱动更新**（已决定：只检测 + 提醒 + 一键跳转）。
 - 不做跨平台（仅 Windows）。
 - 不做应用商店 / 分发平台。
-- 不替代包管理器本身（choco/npm 仍由官方命令执行）。
+- 不替代包管理器本身（winget / choco / npm / pnpm / uv … 的更新仍由它们的官方命令执行，Upkeep 只负责挑、跑、记账与清理）。
 
 ---
 
@@ -32,25 +33,30 @@
 
 > 以下数据均为 2026-09-17 在本机实测所得，是全部设计决策的依据。
 
-### 2.1 应用形态（五种，更新路径完全不同）
+### 2.1 本机更新形态（实测清单；**形态集是开放的**）
+
+> 这张表是**本机今天的样子**，不是 Upkeep 的能力上限：形态（机制）可扩展，应用与生态由配置表达（见 4.1、4.3）。
 
 | 形态 | 实例 | 当前版本发现方式 | 更新执行 | 可否自动 |
 |---|---|---|---|---|
-| `SelfUpdateCli` | omp、pi、codex、claude | `<cli> --version` + regex | `update` / `update self` | ✅ 可自动 |
-| `NpmGlobal` | copilot、mcporter、opencli、agent-browser、9router…（全局共 26 包） | `npm ls -g --json` | `npm i -g <pkg>@latest` | ✅ 可自动 |
-| `Choco` | python、vcredist、chocolatey 自身（8+ 待升级） | `choco outdated --limit-output` | `choco upgrade` | ✅ 需 UAC |
-| `ExternalUi` (Electron) | PiDeck（`ayuayue/PiDeck`） | exe 文件版本 | 应用内自更新 | ❌ 只检测+提醒 |
-| `ExternalUi` (Tauri) | CC Switch、Clash Verge、Cockpit Tools、Tuanjie Cowork | exe 文件版本 | 应用内自更新（下 NSIS 到 TEMP 再静默装） | ❌ 只检测+提醒 |
-| `Green` | BCompare、Apifox、Burp | exe 文件版本 | 手动下载 | ❌ 只检测+给链接 |
+| `manager`：winget | **本机 459 个应用被识别、83 个可升级**：CC Switch（`farion1231.CC-Switch`）、Tuanjie Hub、夸克网盘、7-Zip、Git、VS Code、Docker Desktop… | `winget list` / `winget upgrade` | `winget upgrade --id <id>` | ✅ 部分需 UAC |
+| `manager`：npm | copilot、mcporter、opencli、agent-browser、9router…（全局共 26 包） | `npm ls -g --json` | `npm i -g <pkg>@latest` | ✅ 可自动 |
+| `manager`：choco | python、vcredist140、chocolatey 自身（9 个待升级） | `choco outdated --limit-output` | `choco upgrade` | ✅ 需 UAC |
+| `manager`：pnpm / uv / dotnet / pip / go | pnpm 11.9.0、uv 0.11.7、dotnet 10.0.204（csharpier 0.25.0）、pip 26.1.1、go 1.24.5 | 各自的 list 命令 | 各自的 upgrade / install | ✅ 可自动 |
+| `self-update-cli` | omp、pi、codex、claude | `<cli> --version` + regex | `update` / `update self` | ✅ 可自动 |
+| `external-ui` | PiDeck（`ayuayue/PiDeck`）、Cockpit Tools、Tuanjie Cowork、Clash Verge | exe 文件版本（或 winget 的 ARP 条目） | 应用内自更新（下 NSIS 到 TEMP 再静默装） | ❌ 只检测+提醒 |
+| `green` | BCompare、Apifox、Burp | exe 文件版本 | 手动下载 | ❌ 只检测+给链接 |
+| `declarative` | 任何能用命令表达的更新方式（**万能兜底**） | 配置里的命令 + regex | 配置里的命令 | 取决于配置 |
 
 具体安装位置（实测）：
 
 | 应用 | 路径 | 版本 |
 |---|---|---|
-| omp | `%LOCALAPPDATA%\omp\omp.exe` | 18.2.3 |
+| omp | `%LOCALAPPDATA%\omp\omp.exe` | 18.2.4 |
 | pi | npm 全局（`%APPDATA%\npm\pi`） | 0.85.1 |
-| PiDeck | `%LOCALAPPDATA%\Programs\PiDeck\PiDeck.exe` | — |
+| PiDeck | `%LOCALAPPDATA%\Programs\PiDeck\PiDeck.exe` | 0.7.6 |
 | CC Switch | `G:\CC Switch\cc-switch.exe` | 3.20.3 |
+| winget | `%LOCALAPPDATA%\Microsoft\WindowsApps\winget.exe`（**不在 PATH**，`cmd` 里找不到） | 1.29.290 |
 | choco | `C:\ProgramData\chocolatey\bin\choco` | 2.2.2 |
 
 ### 2.2 更新残留（最大收益点）
@@ -98,14 +104,14 @@
 │              │      │      │        └ 版本 / 哈希断言             │
 │              │      │      └ 代理注入·UAC·超时·ANSI·stdin=null    │
 │              │      └ 需更新? 提权? 代理? 需关进程?                │
-│              └ providers/*（五种形态各一实现）                     │
+│              └ providers/*（机制各一实现；应用与生态由配置表达）    │
 │                                                                  │
 │ proxy(winreg) · http(reqwest) · proc(sysinfo) · elevate(ShellExecuteW) │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 **数据流**：UI `invoke("scan")` → Core 并行扫描 → 通过 `emit("scan://progress")` 流式回推 → UI 增量渲染。
-更新与清理同理：`update://progress`、`clean://progress`。
+更新与清理同理：`update://progress`、`clean://progress`。发现候选同理：`invoke("discover")` 只读枚举 → UI 勾选 → `adopt` 追加写入用户级 `apps.yaml`。
 
 **分层原则**：UI 只做展示与选择；一切副作用（spawn 进程、删文件、提权）只在 Core 发生，且都要经过"计划 → 预览 → 执行"三段。
 
@@ -130,6 +136,20 @@ pub trait Provider: Send + Sync {
 ```
 
 设计参考：gup 的"1 provider = 1 文件 + 少量方法契约"，但补上 gup 缺失的**清理钩子**与**回滚**。
+
+**形态是「机制」，不是「应用清单」。** `Form` 只有五类机制，应用数量、生态数量都不受它限制：
+
+| 机制 | 覆盖 | 新增成本 |
+|---|---|---|
+| `manager` | 包管理器 / 生态管理器：winget、npm、pnpm、bun、yarn、scoop、choco、pip、pipx、uv、dotnet tool、cargo、go install | **加一行管理器表**（十几行） |
+| `self-update-cli` | 工具自带更新命令（`omp update`、`pi update self`…） | 配置；仅当机制本身是新的才写文件 |
+| `external-ui` | 带自己更新器的桌面应用：只检测 + 徽标 + 跳转 | 配置 |
+| `green` | 绿色 / 便携软件：检测 + 给下载页 | 配置 |
+| `declarative` | **万能兜底**：detect 命令 + regex、来源链、update 命令 + 参数、verify、cleanup 全部写在 `apps.yaml` | **零代码** |
+
+于是三种成本被分开：**加一个应用 = 改配置；加一个生态 = 加一行管理器表；加一种全新机制 = 写一个 provider 文件（罕见）**。
+
+管理器表每行声明：list 命令与解析、upgrade 命令模板、包 id 字段、是否需提权、是否需注入代理、静默参数。本机实测已装：winget（459 个应用被识别 / 83 个可升级）、npm（26 包）、pnpm、choco（9 个待升级）、uv、dotnet tool、pip、go；未装：scoop、pipx、bun、yarn、cargo、nuget（装了就等于多一行表）。
 
 ### 4.2 配置文件 `apps.yaml`
 
@@ -161,9 +181,10 @@ apps:
         skip_if_running: ["omp.exe"]
 
   - id: pi
-    form: npm-global
+    form: manager
+    manager: npm
     package: "@earendil-works/pi-coding-agent"
-    prefer: self-update
+    prefer: self-update                                  # 有自带更新器时优先用它
     update: { args: ["update", "self"], fallback: "npm" }
 
   - id: pideck
@@ -176,16 +197,21 @@ apps:
       - { glob: "%LOCALAPPDATA%\\pi-desktop-updater\\**", older_than_days: 7, skip_if_running: ["PiDeck.exe"] }
 
   - id: cc-switch
-    form: external-ui
+    form: external-ui                                   # 应用自己更新；winget 作版本来源与备用更新手段
     kind: tauri
+    manager: winget
+    package: "farion1231.CC-Switch"                     # 实测：winget 里就是这个 id
     detect: { exe: "G:\\CC Switch\\cc-switch.exe" }
-    latest: { kind: github, repo: "TBD" }        # 待 M1 核实
+    latest:
+      - { kind: winget }
+      - { kind: github, repo: "TBD" }                   # TBD：winget id 的作者名为 farion1231，需核实仓名
     actions: [open-app, open-release-page]
     cleanup:
       - { glob: "%TEMP%\\CC Switch-*-updater-*", keep_newest: 0, quiet_period_s: 300, skip_if_running: ["cc-switch.exe"] }
 
   - id: choco-python
-    form: choco
+    form: manager
+    manager: choco
     package: python
     update: { needs_admin: true }
 
@@ -194,7 +220,35 @@ apps:
     detect: { exe: "E:\\Beyond_Compare_4.4.6.27483_64bit_Green\\BCompare\\BCompare.exe" }
     latest: { kind: url_regex, url: "TBD", regex: "TBD" }
     actions: [open-download-page]
+
+  # —— 生态管理器：本机 winget 里有清单的应用，加一行就纳管 ——
+  - id: 7zip
+    form: manager
+    manager: winget
+    package: "7zip.7zip"                                 # 实测：24.09 → 26.03
+
+  # —— 万能兜底：任何能用命令表达的更新方式，零代码 ——
+  - id: my-tool
+    form: declarative
+    detect: { command: "my-tool", args: ["version"], regex: "v?([\\d.]+)" }
+    latest:
+      - { kind: url_regex, url: "https://example.com/download", regex: "my-tool-([\\d.]+)\\.zip" }
+    update: { command: "my-tool", args: ["self-update"], needs_proxy: true }
+    verify: { expect: changed }
 ```
+
+### 4.3 发现候选（discovery）
+
+"万能"还要求在纳管一个应用时不必先知道它的机制。`discover` 是**只读**命令，枚举候选：
+
+| 候选来源 | 得到 | 备注 |
+|---|---|---|
+| `winget list` | 名称、id、已装版本、来源（winget / ARP） | 本机 459 条；ARP 条目能看出版本但没有"可用版本" |
+| 各管理器的 list | 包名 + 已装版本 | npm / pnpm / choco / uv / dotnet / pip / go |
+| 注册表卸载项 | 名称、版本、安装位置 | 本机约 793 条，用来推断 exe 以读版本资源 |
+| `%LOCALAPPDATA%\Programs`、`Program Files` | exe 路径 + 版本资源 | 绿色 / 便携软件 |
+
+候选只呈现，不写盘；用户勾选"纳管"后才**追加到用户级 `%LOCALAPPDATA%\Upkeep\apps.yaml`**（出厂 `config/apps.yaml` 不动）。发现同样只在用户点"发现应用"时运行 —— 与 5.1 的契约一致：没有用户发起的动作，就没有网络请求与子进程。
 
 ---
 
@@ -213,12 +267,16 @@ apps:
 
 | kind | 实现 | 备注 |
 |---|---|---|
+| `winget` | `winget list --id <id>` / `winget upgrade` | 一次拿到全部待升级；**winget 自己读系统代理，无需注入** |
+| `manager` | 该管理器自己的 list / outdated | 与 detect 共用一次调用 |
 | `github` | `GET /repos/{repo}/releases/latest` → `tag_name` | 走显式代理；可用 `GITHUB_TOKEN` 提额 |
 | `npm` | `GET registry.npmjs.org/{pkg}/latest` → `version` | |
 | `self-check` | 跑 `<cli> update --check` 并解析 | omp 支持 |
 | `choco` | `choco outdated --limit-output` | 一次拿到全部待升级 |
-| `file-version` | 读 exe 的 `VS_VERSION_INFO` | 桌面应用当前版本 |
+| `file-version` | 读 exe 的 `VS_VERSION_INFO` | 桌面应用的当前版本 |
 | `url_regex` | 拉页面 + 正则 | 绿色软件兜底；失效只影响该行 |
+
+`latest` 接受**有序来源链**：写成列表时按顺序尝试，第一个给出可用版本的来源胜出（例：先 `winget`，再 `github`，最后 `url_regex`）；单个 map 是单元素链的简写。这样"万能"不依赖任何单一来源：应用在 winget 里有清单就用它，没有就回落到 GitHub release 或厂商页面。
 
 ### 5.3 执行层（把本项目踩过的坑固化为规范）
 
@@ -292,13 +350,13 @@ struct Rule {
 │ │ ✓ pi    0.85.1 → 0.86.0   12.4s                                  │ │
 │ │ ✗ choco 需要管理员权限（已跳过）                                   │ │
 │ └──────────────────────────────────────────────────────────────────┘ │
-│ [残留清理 (661MB)]   [设置]   [历史]                                  │
+│ [残留清理 (661MB)]   [设置]   [历史]   [发现应用]                     │
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
 图中列表是用户点过「检查更新」之后的样子：**默认不勾选任何行**，勾选只表示选中，点「更新选中」才执行；「全选可更新」也只勾选、不执行；每行另有一个 `[刷新]`，只重查该行。从未检查过时列表是空的，只显示「检查更新」引导和上次结果的新鲜度。
 
-六个板块（均已确认要做）：
+七个板块（均已确认要做）：
 
 1. **应用列表 + 版本对比**：当前/最新版本、状态徽标（待更新 / 最新 / 未知 / 失败）、可排序与筛选、每行可单独刷新。**不做任何自动扫描**：启动渲染上次结果与新鲜度，从未检查过则为空态。
 2. **批量操作 + 实时进度**：检查更新 / 全选可更新 / 更新选中 / 单行更新；**更新目标永远来自用户的手动勾选或点击**，不存在自动勾选、自动更新或启动即更新；逐条进度、失败原因、可中止。
@@ -306,6 +364,7 @@ struct Rule {
 4. **设置页**：代理（system/自定义）、并发、超时、保留策略、UAC 策略、每应用启用开关。
 5. **历史记录**：何时从什么版本升到什么版本、成功/失败、耗时、日志入口。
 6. **桌面应用行**：黄色"待更新"徽标 + `[打开应用]`（ShellExecute）+ `[下载页]`，**绝不代跑安装器**。
+7. **添加应用（发现候选）**：点「发现应用」→ 列出候选（名称 / 已装版本 / 证据来源 / 建议的形态）→ 勾选「纳管」→ 追加到用户级 `apps.yaml`；也可以直接手写一条 `declarative` 条目。全程只读，直到用户确认。
 
 ---
 
@@ -342,6 +401,7 @@ struct Rule {
 | **M2** | 批量更新（`SelfUpdateCli` + `NpmGlobal`）+ 实时进度 + 代理注入 | omp/pi 可一键升级；父进程环境无代理残留；失败隔离生效 |
 | **M3** | 清理引擎 + 回滚 | 先产出 661 MB 清单；执行后回收量可量化；登录态与当前版本零误删 |
 | **M4** | Choco（UAC）+ 桌面应用提醒跳转 + 绿色软件链接 + 设置页完善 | choco 能提权完成；桌面应用只提醒、不代跑安装器 |
+| **M5** | **万能接入**：管理器表（winget 优先，含 pnpm / uv / dotnet / pip / go）+ `declarative` 形式 + 发现候选 | winget 能升级的应用可一键纳管；加一个应用只改配置；发现结果不写盘直到用户确认 |
 
 ---
 
@@ -357,6 +417,9 @@ struct Rule {
 | 6 | 与已有 `omp-clean.ps1` / `omp-maintain.ps1` 功能重叠 | **保留二者**作为 CLI 兜底与行为基准；Upkeep 结果不一致时用于对照，不删除 |
 | 7 | 系统代理端口可能变化（xray 进程 PID 轮换） | 每次运行都从注册表实时读取，不写死端口 |
 | 8 | `%LOCALAPPDATA%\com.ccswitch.desktop`（147 MB）性质未定 | 需甄别是缓存还是配置，确认前不纳入清理 |
+| 9 | winget 只能用 `%LOCALAPPDATA%\Microsoft\WindowsApps\winget.exe` 调用（不在 PATH，`cmd` 里找不到）；源索引需要能出网 | 平台层按别名绝对路径解析；找不到就只把它当发现来源，不当作更新手段 |
+| 10 | 大量应用只有 ARP 条目、没有 winget 清单（PiDeck / Cockpit Tools / Tuanjie Cowork）：winget 能看出版本但没有"可用版本" | 这些走 `external-ui` / `green` + `github` / `url_regex` 来源链；发现候选要如实标注"只能提醒" |
+| 11 | 发现候选可能几百条，挑起来费劲 | 候选默认按"有可用版本 / 可无人值守"排序并分组，只列尚未纳管的 |
 
 ---
 
@@ -375,33 +438,40 @@ struct Rule {
 
 **未核实线索**（来自检索，未逐个验证，仅供参考）：`electron-builder` 关于更新残留长期未修的 issue（#8730 / #6269）；`astral-sh/uv` 自更新不读 `HTTPS_PROXY` 的 issue（#10709）。
 
-**结论**：没有现成项目能同时满足「异构应用形态 + 跨形态清理钩子 + Windows」，因此自研；但复用 gup 的 provider 契约、topgrade 的钩子思想、Scoop 的清理策略。
+**结论**：没有现成项目能同时满足「异构应用形态 + 跨形态清理钩子 + Windows」，因此自研；但复用 gup 的 provider 契约、topgrade 的钩子思想、Scoop 的清理策略。winget 不是竞品而是**被纳管的主力机制**：本机实测它认得出 459 条、能升级 83 条，但它对只有 ARP 条目的应用（PiDeck / Cockpit Tools / Tuanjie Cowork）只能看版本不能升级，且完全不管更新残留 —— 这两块正是 Upkeep 的存在理由。
 
 ---
 
 ## 附录 A：本机应用清单（实测，M1 的初始 `apps.yaml` 依据）
 
-**`SelfUpdateCli`**
-- omp 18.2.3 — `%LOCALAPPDATA%\omp\omp.exe` — `omp update`（需代理）
+**`self-update-cli`**
+- omp 18.2.4 — `%LOCALAPPDATA%\omp\omp.exe` — `omp update`（需代理）
 - pi 0.85.1 — npm 全局 — `pi update [source|self|pi]`
 - codex 0.154.0 — npm 全局 — `codex update`
 - claude-code 2.1.274 — npm 全局 — `claude update|upgrade`
 
-**`NpmGlobal`**（26 个，重点：copilot 0.0.362、mcporter 0.9.0、opencli 1.8.7、agent-browser 0.27.0、9router 0.4.71、context-mode 1.0.169、model-verity 0.2.0）
+**`manager`: winget**（本机 459 个应用被识别 / 83 个可升级；这是"万能"的主力）
+- CC Switch `farion1231.CC-Switch` 3.20.3、Tuanjie Hub `Unity.TunjieHub` 1.3.7、夸克网盘 `Alibaba.Quark` 6.9.6.896、7-Zip、Git、VS Code、Docker Desktop、Node.js、OBS、LibreOffice…
 
-**`Choco`**（2.2.2；待升级：chocolatey 2.2.2→2.7.4、python 3.11.4→3.14.7、vcredist140、visualstudio2019buildtools 等）
+**`manager`: npm**（26 个，重点：copilot 0.0.362、mcporter 0.9.0、opencli 1.8.7、agent-browser 0.27.0、9router 0.4.71、context-mode 1.0.169、model-verity 0.2.0）
 
-**`ExternalUi`**
-- PiDeck — Electron，`ayuayue/PiDeck`，更新缓存 `%LOCALAPPDATA%\pi-desktop-updater`（251 MB）
+**`manager`: choco**（2.2.2；待升级 9 个：chocolatey 2.2.2→2.7.4、python 3.11.4→3.14.7、vcredist140 14.32→14.51、visualstudio2019buildtools 16.11.17→16.11.60…）
+
+**`manager`: 其它已装生态**
+- pnpm 11.9.0（全局 bin `%LOCALAPPDATA%\pnpm\bin` 未在 PATH）、uv 0.11.7（暂无工具）、dotnet 10.0.204（csharpier 0.25.0）、pip 26.1.1（`C:\Python311`）、go 1.24.5
+- 未装：scoop、pipx、bun、yarn、cargo、nuget
+
+**`external-ui`**（winget 只能看出版本，没有可用版本）
+- PiDeck — Electron，`ayuayue/PiDeck`（实测最新 `v0.7.6` = 已装 0.7.6），更新缓存 `%LOCALAPPDATA%\pi-desktop-updater`（262 MB）
 - CC Switch — Tauri，`G:\CC Switch\`，数据目录 `%LOCALAPPDATA%\com.ccswitch.desktop`
-- Clash Verge、Cockpit Tools、Tuanjie Cowork
+- Clash Verge 2.3.2、Cockpit Tools 0.26.5、Tuanjie Cowork 2.1.1-canary.3
 
-**`Green`**
-- BCompare — `E:\Beyond_Compare_4.4.6.27483_64bit_Green\`
-- Apifox — `E:\Apifox\`
-- Burp Suite 2026.4.3
+**`green`**
+- BCompare 4.4.6.27483 — `E:\Beyond_Compare_4.4.6.27483_64bit_Green\`
+- Apifox 2.7.8 — `E:\Apifox\`
+- Burp Suite 2026.4.3（winget 里是 `PortSwigger.BurpSuite`，2026.4.3 → 2026.7.3）
 
-> 全机注册表卸载项共约 793 条 —— Upkeep 只纳管"用户主动选择"的应用，不做全机扫描。
+> 全机注册表卸载项约 793 条、winget 识别 459 条。Upkeep **只纳管用户主动选中的**应用：`discover` 只把候选读出来给用户挑，既不自动纳管、也不整机接管。
 
 ---
 
@@ -424,3 +494,4 @@ struct Rule {
 |---|---|---|
 | v0.1 | 2026-09-17 | 初稿：完成本机盘点、方案调研、架构与里程碑设计 |
 | v0.2 | 2026-09-17 | 明确「用户发起」契约：扫描只在点「检查更新」时发生（启动/聚焦/定时都不扫描），但每行可单独刷新；更新目标必须由用户手动勾选，默认不勾选任何行；通知只用于用户发起动作的收尾 |
+| v0.3 | 2026-09-17 | 形态集开放：形态是「机制」而非应用清单（加应用=改配置，加生态=加一行管理器表，`declarative` 是零代码兜底）；新增 winget 等生态管理器（实测 459 个应用被识别 / 83 个可升级）；`latest` 改为有序来源链；新增 `discover`/`adopt` 发现候选与 M5 里程碑 |

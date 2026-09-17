@@ -2,7 +2,7 @@
 
 [中文](README.md)
 
-**A local Windows-only desktop console: five unrelated kinds of application update in one window, plus safe reclamation of the residue those updaters leave behind.**
+**A local Windows-only desktop console: every kind of application update on the machine in one window — package managers and ecosystems, self-updating desktop applications, portable applications, and anything else expressible as a command line; plus safe reclamation of the residue those updaters leave behind.**
 
 ![Status](https://img.shields.io/badge/status-skeleton-orange)
 ![Platform](https://img.shields.io/badge/platform-Windows%2011%20x64-lightgrey)
@@ -18,15 +18,17 @@
 
 Upkeep runs entirely on this machine with no account. It touches the network only for the official sources it checks for versions and updates, and only when you ask it to: nothing is scanned in the background. It does three things: **see it** (installed vs latest in one screen), **update it** (batch updates for the forms that can update unattended, with progress, failure isolation, proxy injection, and UAC elevation), and **clean it** (a preview and a byte total before anything is deleted).
 
-It manages five kinds of application whose update paths have nothing in common:
+It puts update paths with nothing in common behind one set of mechanisms, and it does not pick favourites:
 
-| Form | Examples | How it updates | Unattended |
+| Mechanism | Examples | How it updates | Unattended |
 |---|---|---|---|
+| Ecosystem manager | winget, npm, pnpm, choco, uv, dotnet, pip, go… | each manager's own command | ✅ |
 | Self-updating CLI | `omp`, `pi`, `codex`, `claude` | the tool's own `update` | ✅ |
-| Global npm package | `@github/copilot`, `mcporter` … | `npm i -g <pkg>@latest` | ✅ |
-| Chocolatey | `python`, `vcredist140` | `choco upgrade` | ✅ after elevation |
-| Desktop application | PiDeck, CC Switch, Clash Verge | the app updates itself | ❌ detect and notify |
+| Desktop application | PiDeck, CC Switch, Clash Verge | the app updates itself (winget can drive it where a manifest exists) | ❌ detect and notify |
 | Portable application | Beyond Compare, Apifox | manual download | ❌ link only |
+| Command-line fallback (universal) | any tool with a command line | the command you write in the config | depends on the config |
+
+Adding an application is a config change, not a code change; an ecosystem that is not installed here yet is one row in the manager table. Not sure where to start? `[发现应用]` lists candidates with their installed versions and evidence, and you tick the ones to manage.
 
 **For:** a machine running several CLIs, global npm packages, Chocolatey packages, and self-updating desktop applications at once, where keeping up means remembering five command families and cleaning up means reading `%TEMP%` by hand.
 **Not:** a package manager (`choco` and `npm` still run their own commands), a cross-platform tool, or an app store — and it **never** runs a desktop application's installer.
@@ -53,7 +55,7 @@ It manages five kinds of application whose update paths have nothing in common:
 
 ## ✨ Highlights
 
-- 🎛️ **Five forms, one list** — installed and latest versions side by side, with a badge and an open-app / download-page button for desktop applications.
+- 🎛️ **Anything can be managed** — winget / npm / pnpm / choco / uv / dotnet / pip ecosystems, self-updating desktop applications, portable applications, and anything expressible as a command; adding an application is config, and `[发现应用]` brings candidates to you.
 - 🖐️ **You start everything** — no automatic scan, no background polling, no pre-ticked rows: opening the window shows the previous result and how old it is, and an update target is always one you ticked.
 - ⚡ **Batch updates that report honestly** — per-row progress, one failure never takes down the batch, each process gets its own timeout, and cancel kills the whole process tree.
 - 🧹 **Preview before anything is deleted** — declarative glob rules with a process guard and stale-version comparison, and a "what, and how many bytes" list first.
@@ -64,7 +66,7 @@ It manages five kinds of application whose update paths have nothing in common:
 
 ## 🧩 Features
 
-Six panels: **applications** (versions and state badges; one failing row leaves the others alone), **progress and log** (phase, throughput, ETA, exit code, and a log one click away from a failed row), **cleanup** (match count and byte total per rule, nothing happens until you confirm), **settings** (proxy, concurrency, timeout, retention, UAC policy), **history** (one append-only JSONL record per action), and **notifications** (a settled run). Panel rules and badges: [docs/ui.md](docs/ui.md).
+Seven panels: **applications** (versions and state badges; one failing row leaves the others alone), **progress and log** (phase, throughput, ETA, exit code, and a log one click away from a failed row), **cleanup** (match count and byte total per rule, nothing happens until you confirm), **settings** (proxy, concurrency, timeout, retention, UAC policy), **history** (one append-only JSONL record per action), **notifications** (a settled run), and **add application** (discovery candidates → tick to adopt → written only to the user-level `apps.yaml`). Panel rules and badges: [docs/ui.md](docs/ui.md).
 
 Cleanup's three hard rules: **only glob-matched entries**, **a running target skips the whole rule**, **dry run by default** — semantics and the review checklist are in [docs/cleanup-rules.md](docs/cleanup-rules.md). Every update is verified to have actually changed the version, or it is recorded as `verify failed` with its rollback copy kept.
 
@@ -76,7 +78,7 @@ Cleanup's three hard rules: **only glob-matched entries**, **a running target sk
 UI (React)      six panels: renders state, sends plans
    │  IPC       Tauri commands + events (scan://progress …)
 Core (Rust)     config → scan → plan → exec → verify → clean → history
-   │            providers/* one file per form · platform/* the only Win32, registry, process code
+   │            providers/* one file per mechanism + the manager table · platform/* the only Win32, registry, process code
 On disk         %LOCALAPPDATA%\Upkeep: state.json · history.jsonl · logs/ · rollback/
 ```
 

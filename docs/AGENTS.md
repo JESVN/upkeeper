@@ -15,7 +15,7 @@ Every fact has one home — the tier whose job it is. Elsewhere, link there.
 | [execution-safety.md](execution-safety.md) | Spawning, proxy, elevation, timeout, cancellation, and teardown rules for child processes | Cleanup policy (→ [cleanup-rules.md](cleanup-rules.md)), per-app command lines (→ `config/apps.yaml`) |
 | [cleanup-rules.md](cleanup-rules.md) | Matching semantics, the three hard rules, and the review checklist for a new rule | The `Rule` field reference (→ [config-schema.md](config-schema.md)) |
 | [config-schema.md](config-schema.md) | Field-by-field reference for `apps.yaml`: every key, allowed value, default, and interaction | Rationale for a chosen default (→ Agent Note), measured sizes (→ environment.md) |
-| [providers.md](providers.md) | The `Provider` trait contract, the five forms, per-form responsibilities, `latest` source kinds | Implementation narration of one provider (→ its source file header) |
+| [providers.md](providers.md) | The `Provider` trait contract, the five mechanisms, the manager table, the `declarative` fallback, `latest` source chains | Implementation narration of one mechanism (→ its source file header) |
 | [ui.md](ui.md) | Panels, states and badges, which event drives which panel, interaction rules | Component implementation and styling (→ `src/`) |
 | [development.md](development.md) | Toolchain prerequisites, proxy and mirror setup, daily workflow, the command surface | Milestone acceptance evidence (→ [testing.md](testing.md)), standing rules (→ AGENTS.md) |
 | [testing.md](testing.md) | Required evidence per milestone, test layout and lanes | One-off manual procedures (→ the owning cookbook) |
@@ -49,19 +49,19 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 
 | Document | Ceiling |
 |---|---|
-| Root `AGENTS.md` | 1,600 |
+| Root `AGENTS.md` | 1,750 |
 | `docs/AGENTS.md` (this file) | 1,500 |
-| `docs/architecture.md` | 1,600 |
-| `docs/environment.md` | 950 |
+| `docs/architecture.md` | 1,800 |
+| `docs/environment.md` | 1,350 |
 | `docs/execution-safety.md` | 1,150 |
 | `docs/cleanup-rules.md` | 1,000 |
-| `docs/config-schema.md` | 1,500 |
-| `docs/providers.md` | 1,100 |
-| `docs/ui.md` | 850 |
+| `docs/config-schema.md` | 1,800 |
+| `docs/providers.md` | 1,700 |
+| `docs/ui.md` | 950 |
 | `docs/development.md` | 900 |
-| `docs/testing.md` | 900 |
-| Root `README.md` / `README.en.md` (front-page pair) | 2,000 each |
-| Subtree `AGENTS.md` | 500 |
+| `docs/testing.md` | 950 |
+| Root `README.md` / `README.en.md` (front-page pair) | 2,200 each |
+| Subtree `AGENTS.md` | 550 |
 | Subtree `README.md` | 300 |
 | `.agents/notes/README.md` | 900 |
 | Skill | 700 |

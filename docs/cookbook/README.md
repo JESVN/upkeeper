@@ -4,7 +4,7 @@ Step-by-step guides for the changes this project makes repeatedly. A guide is or
 
 | Guide | Use when |
 |---|---|
-| [adding-a-provider.md](adding-a-provider.md) | Adding an application form, or a new implementation of an existing form |
+| [adding-a-provider.md](adding-a-provider.md) | Adding an application (config only), a manager row, or a new mechanism |
 | [adding-a-cleanup-rule.md](adding-a-cleanup-rule.md) | Adding or widening a rule that deletes something |
 | [verifying-a-release-source.md](verifying-a-release-source.md) | Replacing a `# TBD` version source with a confirmed one |
 

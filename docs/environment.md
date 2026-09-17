@@ -7,7 +7,7 @@ Measured on this machine on 2026-09-17. These are the design's evidence: when on
 | App | Form | Path | Version | How the version was read |
 |---|---|---|---|---|
 | omp | self-update-cli | `%LOCALAPPDATA%\omp\omp.exe` | 18.2.4 | `omp --version` → `omp/18.2.4` |
-| pi | npm-global | `%APPDATA%\npm\pi` | 0.85.1 | `npm ls -g --json` |
+| pi | manager: npm | `%APPDATA%\npm\pi` | 0.85.1 | `npm ls -g --json` |
 | codex | self-update-cli | npm global | 0.154.0 | `@openai/codex` |
 | claude-code | self-update-cli | npm global | 2.1.274 | `@anthropic-ai/claude-code` |
 | PiDeck | external-ui (electron) | `%LOCALAPPDATA%\Programs\PiDeck\PiDeck.exe` | 0.7.6 | `VS_VERSION_INFO` |
@@ -20,7 +20,7 @@ Measured on this machine on 2026-09-17. These are the design's evidence: when on
 | Burp Suite | green | — | 2026.4.3 | not located |
 | choco | choco | `C:\ProgramData\chocolatey\bin\choco` | 2.2.2 | `choco --version` |
 
-`npm ls -g --json` reports exactly 26 globally installed packages; the ones Upkeep tracks are the `npm-global` entries in [config/apps.yaml](../config/apps.yaml). The machine registry holds roughly 793 uninstall entries — Upkeep manages only the applications a user adds to the registry and never scans the whole machine.
+`npm ls -g --json` reports exactly 26 globally installed packages; the ones Upkeep tracks are the `manager: npm` entries in [config/apps.yaml](../config/apps.yaml). The machine registry holds roughly 793 uninstall entries and winget sees 459 of them — Upkeep manages only the applications a user selects, and `discover` offers candidates rather than taking the machine over.
 
 Nine Chocolatey packages are upgrade-pending as of the measurement: `chocolatey` 2.2.2 → 2.7.4, `python` and `python3` 3.11.4 → 3.14.7 (`python311` 3.11.9), `vcredist140` 14.32.31332 → 14.51.36247, `visualstudio2019buildtools` 16.11.17 → 16.11.60, `visualstudio-installer`, `chocolatey-visualstudio.extension`, and `chocolatey-windowsupdate.extension`.
 
@@ -32,6 +32,26 @@ Nine Chocolatey packages are upgrade-pending as of the measurement: `chocolatey`
 | PiDeck | `github:ayuayue/PiDeck` | `releases/latest` → `v0.7.6`, which normalizes to the installed `0.7.6` — the `v` prefix is a tag convention, not part of the version |
 
 Any source not in this table is still `# TBD` in the registry and renders as `unknown`.
+
+## Update ecosystems
+
+What each mechanism on this machine can actually do, measured 2026-09-17 by running its listing command:
+
+| Ecosystem | Installed | Listing | Measured result |
+|---|---|---|---|
+| winget | 1.29.290 | `winget list` / `winget upgrade` | **459 applications detected, 83 upgradeable**; only reachable as `%LOCALAPPDATA%\Microsoft\WindowsApps\winget.exe` (an execution alias — not on `PATH`, and `cmd` cannot find it) |
+| npm | 12.0.0 | `npm ls -g --json` | 26 global packages |
+| choco | 2.2.2 | `choco outdated --limit-output` | 9 upgrade-pending |
+| pnpm | 11.9.0 | — | `pnpm ls -g` fails until `%LOCALAPPDATA%\pnpm\bin` is on `PATH` |
+| uv | 0.11.7 | `uv tool list` | no tools installed |
+| dotnet | 10.0.204 | `dotnet tool list -g` | `csharpier` 0.25.0 |
+| pip | 26.1.1 | `python -m pip list --outdated` | Python 3.11 at `C:\Python311` |
+| go | 1.24.5 | — | installed binaries carry no manifest; `GOBIN` not yet inspected |
+| scoop, pipx, bun, yarn, cargo, nuget | not installed | their documented listing command | adding one is a single manager-table row |
+
+Two traps this measurement exposed. `winget` is an execution alias, so a `PATH` lookup either fails or resolves through the Store redirector — resolve the absolute alias path instead. `%LOCALAPPDATA%\Microsoft\WindowsApps\python.exe` is the App Installer's Store redirector, not an interpreter; the Python that answered is the real install under `C:\Python311`.
+
+winget is what makes "manage anything" practical: it detects versions for applications that no package manager installed, and it carries a manifest for 83 of them here. It still cannot upgrade an application it only knows from the registry's Add/Remove entries — PiDeck, Cockpit Tools, and Tuanjie Cowork appear as `ARP\…` entries with a version but no available version — which is why those stay `external-ui` with a GitHub or page source.
 
 ## Update residue
 
@@ -53,6 +73,7 @@ The system proxy is `ProxyEnable=1`, `ProxyServer=127.0.0.1:10808` (xray). The p
 |---|---|---|
 | .NET (`Invoke-WebRequest`, `HttpWebRequest`) | yes | 161 MB downloaded in 12.7 s through the proxy |
 | `gh` | no | fails with `error connecting to http` until `HTTPS_PROXY` is exported; authenticated as account `JESVN` with a keyring token |
+| `winget` | yes, on its own | `winget source update` completes with no proxy variable set in the environment |
 | `omp` (Bun fetch) | no | direct GitHub fetch times out at its own 15-minute limit → [postmortem 0001](postmortem/0001-omp-update-timeout-and-proxy.md) |
 | `curl` | no | returns `HTTP=000` both direct and through the proxy — unusable as a probe |
 | `rustup`, `cargo` | no | download from `static.rust-lang.org` and `crates.io`; need `HTTPS_PROXY` per process or a mirror |

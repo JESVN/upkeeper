@@ -16,6 +16,8 @@ Implicit triggers are the wrong default for this tool. Opening a window would be
 
 **Notifications follow a user-initiated action.** `settings.notify` reports the settlement of a run the user started. There is no background discovery, so there is nothing that could notify on its own.
 
+**Discovery follows the same rule.** `discover` is read-only and `adopt` writes only what the user ticked, into the user-level `apps.yaml` only — the mechanism model and its alternatives are in [manage anything](2026-09-17-manage-anything-open-mechanisms.md).
+
 Registry-read and per-child proxy injection are unaffected: they still happen on every run, but only for a run the user started.
 
 **A row can be re-probed on its own.** `[刷新]` runs `scan { apps: [<id>] }`: one provider, no others, and the remaining rows keep their recorded values and `checked_at`. A failed row's `[重试]` is the same action under a failure-specific label, so there is exactly one way to refresh a row.

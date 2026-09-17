@@ -36,27 +36,27 @@ The application registry: which apps Upkeep manages, how it detects their versio
 | Key | Type | Required | Notes |
 |---|---|---|---|
 | `id` | string | yes | Stable, unique, lowercase, kebab-case; used for history, log names, and the override merge |
-| `form` | enum | yes | `self-update-cli`, `npm-global`, `choco`, `external-ui`, `green` |
+| `form` | enum | yes | The mechanism: `manager`, `self-update-cli`, `external-ui`, `green`, `declarative` |
 | `enabled` | bool | no, default `true` | `false` keeps the entry for reference and skips it everywhere |
 | `display_name` | string | no | UI label; falls back to `id` |
-| `detect` | block | except `npm-global` and `choco` | Current version: version command and regex, or the executable's version resource |
-| `latest` | block | yes | Newest known version |
-| `update` | block | form-dependent | How to update; absent for forms Upkeep does not drive |
+| `detect` | block | except `manager` | Installed version and path. For `manager` it may carry only `exe`, because the manager's listing answers the version |
+| `latest` | block or list | yes | One source, or an ordered chain of sources tried in order |
+| `update` | block | mechanism-dependent | How to update; absent for mechanisms Upkeep does not drive, and optional for `manager` (the manager row supplies the command, so the block carries per-app overrides only) |
 | `verify` | block | no | Post-update assertion; default is "version changed" |
-| `actions` | list | form-dependent | Buttons offered in the row: `open-app`, `open-release-page`, `open-download-page` |
+| `actions` | list | mechanism-dependent | Buttons offered in the row: `open-app`, `open-release-page`, `open-download-page` |
 | `cleanup` | list | no | Cleanup rules owned by this app |
 
-Form-specific keys:
+Mechanism-specific keys:
 
-| Form | Additional keys |
+| Mechanism | Additional keys |
 |---|---|
+| `manager` | `manager` (one of the table in [providers.md](providers.md#managers)), `package` (that manager's id), `prefer` (`self-update` when the tool also updates itself), `update.fallback` |
 | `self-update-cli` | `update.args`, `update.needs_proxy` |
-| `npm-global` | `package`, `prefer` (`self-update` or `npm`), `update.fallback`; no `detect` block — the form derives it from `package` |
-| `choco` | `package`, `update.needs_admin: true`; no `detect` block — `choco outdated` covers every choco app in one call |
-| `external-ui` | `kind` (`electron` or `tauri`), `latest.kind: github`, at least one `actions` entry |
+| `external-ui` | `kind` (`electron` or `tauri`), at least one `actions` entry; `manager` and `package` may be present so winget can answer the version |
 | `green` | `latest.kind: url_regex`, `actions: [open-download-page]` |
+| `declarative` | `detect.command`, `update.command` |
 
-The executable path always lives in `detect.exe`; a form-specific key never repeats it.
+The executable path always lives in `detect.exe`; a mechanism-specific key never repeats it.
 
 `external-ui` and `green` entries must not declare an `update` block: Upkeep does not run their installers, and a config that claims otherwise is rejected.
 
@@ -65,14 +65,17 @@ The executable path always lives in `detect.exe`; a form-specific key never repe
 | Key | Type | Notes |
 |---|---|---|
 | `exe` | path | `%VAR%` expansion applies; must be an absolute path after expansion |
+| `command` | string | The executable to run for the version, when it is not the same as `exe` |
 | `args` | list | Arguments that print a version; omit to read the file's version resource |
 | `regex` | string | Capture group 1 is the version; required when `args` is present |
-| `version_source` | enum | `stdout` (default) or `file-version` (the exe's `VS_VERSION_INFO`) |
+| `version_source` | enum | `stdout` (default), `file-version` (the exe's `VS_VERSION_INFO`), or `manager` (the listing call) |
 
 ### `latest`
 
 | `kind` | Required keys | Where the version comes from |
 |---|---|---|
+| `winget` | — (uses `package`) | `winget upgrade`, one call covering every winget-managed app |
+| `manager` | — (uses `manager` and `package`) | The manager's own listing call, shared with detect |
 | `github` | `repo` | `releases/latest` → `tag_name`, through the resolved proxy; `GITHUB_TOKEN` is optional and raises the rate limit |
 | `npm` | — (uses `package`) | `registry.npmjs.org/<package>/latest` → `version` |
 | `self-check` | `args` | The tool's own check output, parsed with `regex` |
@@ -82,13 +85,16 @@ The executable path always lives in `detect.exe`; a form-specific key never repe
 
 A `kind` whose required keys are missing fails validation at load, not at scan time.
 
+**A chain is tried in order and the first source that answers wins.** A single mapping is sugar for a one-element chain. A source that returns nothing usable is not an error unless every source in the chain did: then the row is `unknown` with the reason from the last source.
+
 ### `update`
 
 | Key | Type | Default | Notes |
 |---|---|---|---|
-| `args` | list | form default | Arguments appended to the form's command |
-| `needs_proxy` | bool | `false` | Inject the resolved proxy into this child |
-| `needs_admin` | bool | `false` | Plan an elevation step; `choco` apps always set this |
+| `command` | string | mechanism default | The executable to run; required for `declarative` |
+| `args` | list | mechanism default | Arguments appended to the command |
+| `needs_proxy` | bool | `false` | Inject the resolved proxy into this child. Never set it for `winget`, which reads the system proxy itself |
+| `needs_admin` | bool | `false` | Plan an elevation step; `choco` and machine-wide `winget` upgrades set this |
 | `preflight` | bool | `false` | Probe throughput before a large download |
 | `eta_guard_min` | int | — | Stop and warn when the estimated duration exceeds this many minutes |
 | `fallback` | enum | — | `npm` retries a failed self-update through the package manager |
@@ -124,10 +130,12 @@ An entry carrying `"TBD"` is listed but never scanned: it reports `unknown` with
 ## Validation rules
 
 - `id` unique, lowercase, kebab-case; a duplicate is a load error, not last-wins.
-- `form` from the closed set; `latest.kind` from the closed set; unknown variants are errors.
+- `form` from the closed mechanism set, `manager` from the manager table, `latest.kind` from the closed set; unknown variants are errors.
+- `form: manager` requires both `manager` and `package`; `detect` on such an entry may carry only `exe`, because the listing call owns the version.
+- `manager` or `package` on a mechanism that cannot use them — anything but `manager` and `external-ui` — is an error.
+- `form: declarative` requires `update.command`, and `detect` must carry `exe` or `command`.
 - `detect.exe` and every `cleanup.glob` absolute after expansion; a relative path is an error, and `"TBD"` is accepted only where the [unverified-source rule](#unverified-sources) allows it.
-- `detect` present on an `npm-global` or `choco` entry is an error — two sources for one version is a disagreement waiting to happen.
 - `keep_newest` and `older_than_days` on the same rule is an error — one filter decides an age.
 - `protect` and `only` naming the same child is an error.
-- A `self-update-cli` or `npm-global` entry without an `update` block is an error.
+- A `self-update-cli` or `declarative` entry without an `update` block is an error; a `manager` entry may omit it, because the manager row supplies the command and `update` then carries per-app overrides only.
 - `external-ui` or `green` with an `update` block is an error.

@@ -9,7 +9,7 @@ Rules for anything Upkeep spawns, proxies, elevates, times out, cancels, or clea
 - **No shell.** Spawn the executable with an argument vector; never `cmd /c` or `powershell -Command` a composed string. Quoting rules differ per shell and paths on this machine contain spaces.
 - **Resolve an npm shim instead of invoking one.** A globally installed npm CLI is a `.cmd`/`.ps1` shim, not an executable, and running it means running a shell. `platform` reads the shim, resolves the Node script it points at, and spawns `node` with that script, so the "no shell" rule holds for `pi`, `codex`, and `claude` alike. A shim that cannot be resolved is reported as `NotInstalled` with the shim's path.
 - **Set the working directory explicitly** and keep it inside the app's own directory or `%LOCALAPPDATA%\Upkeep\work`. A tool that writes relative files must not litter a random CWD.
-- **Pass non-interactive flags the tool documents**, such as `--yes` for a package manager that would otherwise prompt. If a tool has no non-interactive mode, it is not eligible for the `self-update-cli` or `npm-global` forms.
+- **Pass non-interactive flags the tool documents**, such as `--yes` for a package manager that would otherwise prompt. A tool with no non-interactive mode is not eligible for `manager`, `self-update-cli`, or `declarative`; it belongs in `external-ui` or `green`.
 - **Cap concurrency** at `settings.concurrency`. Registry probes are network-bound; installers compete for the same disk and lock the same installation directories.
 
 ## Proxy resolution

@@ -43,6 +43,8 @@ Results are written to `state.json` with `checked_at`. That cache exists to rend
 
 A single-row refresh is the same command with `apps: [<id>]`: one provider runs, the other rows keep their recorded values and `checked_at`.
 
+A manager answers for all of its apps in one call: one `winget upgrade` or `choco outdated` covers every winget or choco entry, so adding applications to the registry does not add calls. Each app's `latest` is then an [ordered source chain](providers.md#version-sources), resolved in order, with the first usable answer winning — the manager's listing first, then the app's own check, then a release feed or vendor page.
+
 ### plan
 
 `Plan` is the only input to `exec`, and it is serializable and printable — the UI shows exactly what a batch will do before it starts. A `Plan` records, per app: target version, elevation requirement, proxy requirement, processes to close, whether a rollback copy is taken, and the estimated download size when the source reports one.
@@ -77,7 +79,7 @@ Append-only, one record per action:
 |---|---|
 | `src-tauri/src/commands/` | The `#[tauri::command]` surface: argument validation, event emission, result mapping. No logic that a Rust test cannot reach without Tauri |
 | `src-tauri/src/core/` | The seven stages above, the error type, and the state machine between stages |
-| `src-tauri/src/providers/` | One file per form; `mod.rs` holds the trait, the form enum, and the registry |
+| `src-tauri/src/providers/` | One file per mechanism, plus `managers.rs` holding the manager table; `mod.rs` holds the trait, the `Form` enum, and the registry |
 | `src-tauri/src/platform/` | Proxy resolution from the registry, HTTP client construction, process enumeration and termination, elevation, exe version reading, ANSI stripping |
 | `src-tauri/src/state/` | Path resolution under `%LOCALAPPDATA%\Upkeep`, the JSONL appender, the atomic `state.json` writer, log file naming |
 
@@ -85,9 +87,13 @@ Append-only, one record per action:
 
 Command arguments and results are documented once here and mirrored in `src/ipc/`; the Rust side owns the serde representation. Every mutating command takes an explicit `dry_run` flag or a `Plan` id, and returns the run id that correlates it with the history record and the log file.
 
+`discover` and `adopt` are a pair: `discover` is read-only and returns candidates, `adopt` appends the confirmed ones to the **user-level** `%LOCALAPPDATA%\Upkeep\apps.yaml` only. The shipped [config/apps.yaml](../config/apps.yaml) is never written by the application, and no candidate is adopted without the user's selection.
+
 | Command | Input | Result |
 |---|---|---|
 | `scan` | `{ apps?: string[] }` | `ScanReport { checked_at, apps: AppState[] }` |
+| `discover` | `{ sources?: string[] }` | `Candidate[] { name, installed_version, path?, evidence, suggested_entry }` |
+| `adopt` | `{ candidates: Candidate[] }` | `{ added: string[], apps_yaml: string }` |
 | `plan_update` | `{ apps: string[] }` | `Plan { id, steps: PlanStep[] }` |
 | `run_update` | `{ plan_id }` | `RunReport { run_id, outcomes: Outcome[] }` |
 | `plan_clean` | `{ rules?: string[], apps?: string[] }` | `CleanPlan { id, rules: RuleMatch[] }` |
@@ -112,7 +118,8 @@ Events, all emitted at most once per completed unit of work:
 
 ## Extension points
 
-- **A new application form** → a provider file, the trait impl, a `form` value, and a `config/apps.yaml` entry. Follow [adding-a-provider.md](cookbook/adding-a-provider.md).
+- **A new application** → a `config/apps.yaml` entry. Only a genuinely new *mechanism* adds a provider file; a new *manager* adds one row to the manager table. Follow [adding-a-provider.md](cookbook/adding-a-provider.md).
+- **A new manager** → one row in `src-tauri/src/providers/managers.rs` (listing command and parser, upgrade template, id field, elevation, proxy, non-interactive flags), written together with the first app that needs it and verified by running its commands.
 - **A new version source** → a `latest.kind` variant in `core/`, implemented once for every form that declares it. Sources are form-independent by design: `github`, `npm`, `choco`, and `file-version` are shared.
 - **A new cleanup target** → a rule in `apps.yaml` when an existing provider's rules can express it; a provider `cleanup_rules()` addition only when matching needs knowledge the declarative schema cannot carry. Follow [adding-a-cleanup-rule.md](cookbook/adding-a-cleanup-rule.md).
 - **A new install/uninstall preview** → a UI feature directory plus commands; no core stage change.
@@ -125,4 +132,4 @@ Events, all emitted at most once per completed unit of work:
 | `%LOCALAPPDATA%\Upkeep\history.jsonl` | `state` | Append-only; never rewritten, never compacted in place |
 | `%LOCALAPPDATA%\Upkeep\logs\<app_id>-<run>.log` | `exec` | ANSI-free; the file a red row opens |
 | `%LOCALAPPDATA%\Upkeep\rollback\<app_id>\<version>\` | `exec` | Present only for forms whose [rollback strategy](providers.md#rollback-and-retention) keeps a copy |
-| `%LOCALAPPDATA%\Upkeep\apps.yaml` | user | Optional override of the shipped default; merged per app id |
+| `%LOCALAPPDATA%\Upkeep\apps.yaml` | user, and `adopt` | Optional override of the shipped default; merged per app id, and the only file `adopt` appends to |

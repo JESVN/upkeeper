@@ -1,35 +1,59 @@
-# Adding a provider
+# Adding an application, a manager, or a mechanism
 
-Use this when adding an application form, or a second implementation of an existing one. The contracts are in [providers.md](../providers.md); the field names are in [config-schema.md](../config-schema.md).
+Three different costs, in increasing order. Pick the smallest one that works: almost every request lands in step 1. The contracts are in [providers.md](../providers.md); the field reference is in [config-schema.md](../config-schema.md).
 
-1. **Pick the form.** If one of the five fits, the change is a new config entry plus an implementation file — not a new trait method. If none fits, stop: a sixth form changes the UI grouping, the rollback matrix, and the trait contract, so it needs an [Agent Note](../../.agents/notes/README.md) before code.
+## 1. An application — config only
 
-   *Verify:* the form's detect, update, and rollback paths can all be described without a new `Provider` method.
+1. **Find out whether it is already known.** Run `[发现应用]` (`discover`): if the application appears as a candidate — winget, an ecosystem manager, or a registry entry — adopting it writes the entry for you. Otherwise continue by hand.
 
-2. **Write the provider file** at `src-tauri/src/providers/<form>.rs`. Keep the file header to the one non-obvious fact about the form (why the version command is what it is, or which flag makes it non-interactive).
+   *Verify:* the candidate lists an installed version and an evidence source, or the app is genuinely absent from every listing.
 
-   *Verify:* `cargo test providers::<form>` compiles and the file has no direct Win32, registry, or filesystem-write call.
+2. **Pick the mechanism from what actually updates it.** A manager id → `manager`; its own `update` command → `self-update-cli`; it updates itself in its own window → `external-ui`; portable with no updater → `green`; anything else with a command line → `declarative`. Never `external-ui` for something Upkeep could update safely, and never `manager` for something that has no manifest.
 
-3. **Implement the trait in the order of the contracts:** `detect` reads only; `latest` returns `None` rather than a guess; `plan` performs no I/O; `update` does exactly what the plan says; `cleanup_rules` returns what the config declares; `rollback` returns `Error::Unsupported` unless a real path exists.
+   *Verify:* the mechanism's update path matches how the tool updates itself today, checked by running that update command once by hand.
 
-   *Verify:* a unit test calls `plan` with a fake `Installed` and asserts the returned flags (needs proxy, needs admin, processes to close, rollback copy) without any child process starting.
+3. **Give it a source chain**, most reliable first: the manager's own listing, the tool's check command, a GitHub release, then the vendor page. One source is fine when it is the right one; a `# TBD` stays marked until a probe confirms it ([procedure](verifying-a-release-source.md)).
 
-4. **Parameterize from config, not from code.** Every path, argument, and regex comes from the app's `apps.yaml` entry. If the provider needs a value the schema cannot express, extend [config-schema.md](../config-schema.md) and its validation rules in the same change rather than embedding a constant.
+   *Verify:* the chain's first working source returns the version the tool itself reports for a release you already know.
 
-   *Verify:* the provider compiles with two different `apps.yaml` entries of the same form and produces different plans.
+4. **Add the entry** to [config/apps.yaml](../../config/apps.yaml) (or to the user-level `%LOCALAPPDATA%\Upkeep\apps.yaml` when it is personal) with `id`, `form`, and the mechanism's keys.
 
-5. **Register it** in `src-tauri/src/providers/mod.rs` alongside the others, and keep the registry free of per-app conditionals.
+   *Verify:* `plan_update` refuses the entry for a missing required key at load, and a scan reports a real version or an explicit `unknown`.
 
-   *Verify:* the registry builds from a config that mentions only this app, with no other provider initialized.
+5. **Add cleanup rules only when the app leaves residue** you have measured, following [adding-a-cleanup-rule.md](adding-a-cleanup-rule.md).
 
-6. **Add the app entry** to [config/apps.yaml](../../config/apps.yaml): `id`, `form`, `detect`, `latest`, `update` where the form drives it, `cleanup` when the app leaves residue. An unverified version source stays `# TBD` and follows [verifying-a-release-source.md](verifying-a-release-source.md).
+   *Verify:* the rule's preview matches a manual measurement of the same paths.
 
-   *Verify:* the app appears in a scan with a real version or an explicit `unknown`, never with a fabricated one.
+No code changes, and no provider file, for any of the above.
 
-7. **Test the failure paths**, not just the happy path: a missing executable returns `NotInstalled` (absent row), a probe timeout marks only this app `failed`, and a non-interactive child never waits on stdin.
+## 2. A manager — one table row
 
-   *Verify:* `cargo test` covers each of those three, and the timeout test asserts the other apps in the same scan still report.
+Use this when the application is installed by a package or ecosystem manager that is not in the table yet (scoop, pipx, bun, yarn, cargo, nuget…). The manager table lives in `src-tauri/src/providers/managers.rs`; [providers.md](../providers.md#managers) lists the columns.
 
-8. **Update the docs** that the change made untrue: the form table in [providers.md](../providers.md) for a new form, the source table for a new `latest.kind`, and an Agent Note when the trait contract itself changed.
+1. **Run the manager's listing and upgrade commands on this machine** before writing anything: the listing command and the field the version lives in, the upgrade template, whether it needs elevation, and which flags keep it non-interactive.
 
-   *Verify:* every link touched by the change resolves, and the form appears in the UI with the correct badge and rollback label.
+   *Verify:* the listing output is captured, and the version it reports matches the tool's own `--version`.
+
+2. **Add the row**, with the listing command and parser, the upgrade template, the id field, elevation, proxy, and silence flags.
+
+   *Verify:* a scan using the new row reports the installed version for one real app; a manager that is not installed reports a finding rather than an error.
+
+3. **Do not invent a row for a manager you have not run.** A row written from documentation is an executable claim nobody verified; it lands together with the first application that needs it.
+
+   *Verify:* every command in the row has been executed at least once, and the note says so.
+
+## 3. A mechanism — a provider file, rarely
+
+Only when the update path is genuinely new (nothing in the manager table, no update command of its own, not a self-updating GUI application, not portable). This changes the trait, the UI grouping, and the rollback matrix, so it needs an [Agent Note](../../.agents/notes/README.md) before code.
+
+1. **Write the provider** at `src-tauri/src/providers/<mechanism>.rs`, implementing the trait in the order of its contracts: `detect` reads only, `latest` walks the chain, `plan` does no I/O, `update` performs exactly the plan, `cleanup_rules` returns what the config declares, `rollback` reports `Unsupported` unless a real path exists.
+
+   *Verify:* a unit test calls `plan` with a fake `Installed` and asserts the flags without starting a child process.
+
+2. **Add the `Form` variant, the registry arm, the UI label,** and the mechanism's row in [providers.md](../providers.md).
+
+   *Verify:* the registry builds a config that mentions only this mechanism, and the row renders with the correct badge and rollback label.
+
+3. **Test the refusals**: missing executable → `NotInstalled` (absent row), probe timeout → only this row `failed`, non-interactive child never waits on stdin.
+
+   *Verify:* `cargo test` covers all three, and the timeout test asserts its siblings still report.
