@@ -18,19 +18,16 @@ Root `AGENTS.md` admits a fact only if an agent needs it in every session; a sit
 
 ## Audit a document
 
-Run the [slop checklist](../../../docs/AGENTS.md#the-slop-checklist) explicitly, in this order:
+Run the [slop checklist](../../../docs/AGENTS.md#the-slop-checklist) — that list is the definition of what counts as slop; do not restate it here. This skill adds the mechanical steps the list cannot state:
 
-1. **Duplication** — grep two or three distinctive phrases from the document; a hit in another file means one of the two must become a link.
-2. **History in the wrong tier** — a sentence about what changed, or about what is not built yet, is removed regardless of how informative it is.
-3. **Restated catalogs** — a provider list, rule inventory, or command table that source files or `config/apps.yaml` already declare is deleted, not corrected.
-4. **Reasoning transcripts** — step narration, test walkthroughs, and rejected local alternatives go to an Agent Note or nowhere.
-5. **Paragraph walls and emphasis inflation** — split them; keep bold for the clause that changes behaviour.
-6. **Links** — resolve every relative link and anchor in the changed files by hand until M0 installs a checker.
-7. **The front-page pair** — `README.md` and `README.en.md` must carry the same sections in the same order, and a fact changed in one is changed in the other in the same edit. A summary on the front page that no longer matches its home in `docs/` is a defect of whichever side moved.
+1. **Work the checklist item by item, in its order**, and report which items you checked rather than saying "audited".
+2. **Duplicate hunt** — grep two or three distinctive phrases from the document; a hit in another file means one of the two must become a link. This is the one item worth actually running, not reading.
+3. **Links** — resolve every relative link and anchor in the changed files by hand until M0 installs a checker. Directory targets are valid; a link that resolves to neither a file nor a directory is broken.
+4. **The front-page pair** — `README.md` and `README.en.md` must carry the same sections in the same order, and a fact changed in one is changed in the other in the same edit.
 
 ## Check the budget
 
-Count words treating a CJK character as one word, then compare to the ceiling in [docs/AGENTS.md](../../../docs/AGENTS.md#word-budgets). When a document is over: relocate first, condense second, raise the ceiling last and only with a reason in the change. When a document is under, leave the ceiling alone — it is a guardrail, not a target.
+Count word-equivalents the way [docs/AGENTS.md](../../../docs/AGENTS.md#word-budgets) defines the measure (western text by whitespace, CJK characters weighted per that section), then compare to its ceiling table. When a document is over: relocate first, condense second, raise the ceiling last and only with a reason in the change. When a document is under, leave the ceiling alone — it is a guardrail, not a target.
 
 ## Move a document
 

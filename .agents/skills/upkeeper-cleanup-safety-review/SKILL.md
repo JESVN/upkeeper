@@ -16,15 +16,18 @@ Deletion is the only irreversible thing Upkeep does. This skill is the review pa
 
 ## Walk the matching pipeline
 
-For each rule the change touches, follow the execution order in [cleanup-rules.md](../../../docs/cleanup-rules.md#matching) and check each step:
+Follow the execution order in [cleanup-rules.md](../../../docs/cleanup-rules.md#matching), asking at each step **the question that only a review asks** — the semantics themselves live in that document and are not restated here:
 
-- **Glob** — absolute after `%VAR%` expansion, anchored, no bare wildcard that can escape the intended directory. Reject a glob whose match count cannot be stated before writing the rule.
-- **`only`** — a new file appearing inside a matched directory must be preserved by default; if it is not, `only` is missing.
-- **`protect`** — state directories are listed explicitly, and `protect` is not used to paper over a glob that is too broad. Protected paths are excluded from byte accounting too, so no preview advertises them.
-- **`keep_newest` / `older_than_days` / `keep_matching_version`** — exactly one age filter per rule; a version rule compares against the version detected in the same run, never a cached one.
-- **`quiet_period_s`** — present for anything an updater creates, because that is the only defence against deleting a directory that was just written.
-- **Byte accounting** — counts exactly what will be removed, with protected paths and filtered entries excluded; the preview total is a floor, never an exaggeration.
-- **Per-entry result** — a locked or vanished entry is reported with its path and OS error and does not stop the rest of the rule; a partially completed rule reports what actually went.
+| Stage | What the review asks |
+|---|---|
+| guard | Does the list name every process that writes there, including the tray process and any helper the updater spawns? |
+| `quiet_period_s` | Is this a directory an updater writes into? If it is and the rule has no quiet period, that is the defect. |
+| glob | Can the changed glob still match outside its intended directory? Could the match count be stated before the rule was written? |
+| `only` | Is a newly appearing file preserved by default? If not, `only` is missing. |
+| `protect` | Are the state directories (login, configuration, databases) listed explicitly, and is `protect` not papering over a glob that is too broad? |
+| filters | Exactly one age filter per rule? Does the version comparison use the version detected in the same run rather than a cached one? |
+| byte accounting | Does it count exactly what will be removed, excluding protected and filtered entries, and is the preview total a floor rather than an exaggeration? |
+| per-entry result | Can a locked or vanished entry fail alone without stopping the rule, and does a partial run report what actually happened? |
 
 ## Test evidence for a destructive change
 

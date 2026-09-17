@@ -30,7 +30,7 @@ config/apps.yaml          出厂默认的应用登记表
 docs/                     当前状态文档：架构、实测环境、执行安全、清理规则、配置 schema（apps.yaml 逐字段）、
                           Provider 契约、界面、视觉方向、开发与测试、操作手册、故障故事
                           （每篇的职责见 docs/AGENTS.md）
-.agents/notes/            决策记录；.agents/skills/  按需加载的工作流
+.agents/notes/            决策记录；.agents/skills/  按需加载的工作流；.agents/progress.md  开发进度
 scripts/                  仓库内辅助脚本；omp 的 PowerShell 基准脚本留在仓库外
 src/                      React 前端（子树规则：src/AGENTS.md）
   ipc/                    唯一允许出现命令名与事件名的地方
@@ -42,25 +42,19 @@ src-tauri/                Rust 内核（子树规则：src-tauri/AGENTS.md）
   src/state/              state.json、history.jsonl、日志
 ```
 
-**`src/` 与 `src-tauri/` 的子树规则不会自动加载**（pi 只加载启动时 cwd 及其祖先目录的 `AGENTS.md`）。动这两个目录里的文件之前，先读它自己的 `AGENTS.md`。
-
 ## 命令
 
-这套命令由 M0 建立；在那之前它们都不存在。
+这套命令由 M0 建立；在那之前它们都不存在。完整清单与代理/镜像步骤见 [docs/development.md](docs/development.md)：
 
 ```sh
-pnpm install             # 前端依赖（react、vite、tailwind）
-pnpm tauri dev           # 开发窗口；需要 Rust 工具链
-pnpm tauri build         # 打出 NSIS / MSI 到 src-tauri/target
-pnpm typecheck           # 对 src/ 跑 tsc --noEmit
-pnpm test                # 前端单元测试
-cargo fmt --check        # 在 src-tauri/ 内执行
-cargo clippy -- -D warnings
-cargo test               # 集成测试，含 dry-run 清理 fixture
-pnpm run doc-budgets     # docs/AGENTS.md 中声明的字数上限
+pnpm install && pnpm tauri dev      # 依赖与开发窗口（需 Rust 工具链）
+pnpm tauri build                    # NSIS / MSI 到 src-tauri/target
+pnpm typecheck && pnpm test         # 前端类型检查与单测
+cargo fmt --check && cargo clippy -- -D warnings && cargo test   # 在 src-tauri/ 内
+pnpm run doc-budgets                # docs/AGENTS.md 的字数上限
 ```
 
-`rustup` 与 `cargo` 不读 Windows 系统代理。首次构建前给该进程单独导出 `HTTPS_PROXY`，或配置镜像源（[步骤](docs/development.md#bootstrap-without-a-working-system-proxy)）。
+`rustup` 与 `cargo` 不读 Windows 系统代理：首次构建前给该进程单独导出 `HTTPS_PROXY`，或配置镜像源（[步骤](docs/development.md#bootstrap-without-a-working-system-proxy)）。
 
 ## 约定
 
@@ -70,11 +64,12 @@ pnpm run doc-budgets     # docs/AGENTS.md 中声明的字数上限
 - **进度事件在工作单元成功之后才 emit**，绝不提前，这样 UI 不可能显示没发生过的事（[事件表](docs/architecture.md#ipc-surface)）。
 - **历史只追加 JSONL。** `state.json` 是带 `checked_at` 的缓存，绝不是「发生过什么」的事实来源（[history](docs/architecture.md#history)）。
 - **失败必须携带 `app_id`、阶段、`exit_code` 与日志路径。** 每个红行都能一键打开它自己的日志。
-- **提权结果经临时文件回传**，因为 UAC 会切断管道；**取消要杀整棵进程树**（[原因](docs/execution-safety.md#elevation)）。
+- **提权结果经临时文件回传**（UAC 会切断管道）；**取消要杀整棵进程树**（[原因](docs/execution-safety.md#elevation)）。
 - **每次更新后都必须校验** —— 版本变化或哈希断言，并记入历史；没有校验的更新不算成功（[verify](docs/architecture.md#verify)）。
 - **注释与文档写完整契约，不写推理过程**（[标准](docs/AGENTS.md#writing-rules)）。
-- **git 提交信息必须写中文。** 格式 `类型: 中文说明`，类型用 `feat` / `fix` / `docs` / `design` / `chore` / `refactor` / `test` 之一；标题与正文都用中文（类型前缀保留英文是为了工具链兼容）。
+- **git 提交信息写中文**：`类型: 中文说明`，类型用 `feat` / `fix` / `docs` / `design` / `chore` / `refactor` / `test`；标题与正文都用中文。
 - **非平凡改动必须在同一次改动里补一篇 Agent Note** 并更新对应文档；只有机械或局部编辑可豁免（[范围](.agents/notes/README.md#when-to-write-one)）。
+- **进度与接手看 `.agents/progress.md`**：它的写入规则在文件顶部，接手流程见 [upkeeper-handoff](.agents/skills/upkeeper-handoff/SKILL.md)。
 - **`unsafe` 只允许出现在 `src/platform/`**，且必须注释它依赖的不变量。
 
 ## 防御性模式
@@ -83,12 +78,16 @@ pnpm run doc-budgets     # docs/AGENTS.md 中声明的字数上限
 
 | 改动 | 先加载 | 然后读 |
 |---|---|---|
+| 新会话接手 / 收尾落盘 | [upkeeper-handoff](.agents/skills/upkeeper-handoff/SKILL.md) · [/wrapup](.pi/prompts/wrapup.md) | [.agents/progress.md](.agents/progress.md) |
 | 会删除/移动文件的东西 | [upkeeper-cleanup-safety-review](.agents/skills/upkeeper-cleanup-safety-review/SKILL.md)（四个必答问题） | [docs/cleanup-rules.md](docs/cleanup-rules.md) |
 | 子进程、提权、超时、取消、进程收尾 | —— | [docs/execution-safety.md](docs/execution-safety.md) |
 | 新增/移动文档，或一处事实疑似有两份 | [upkeeper-doc](.agents/skills/upkeeper-doc/SKILL.md) | [docs/AGENTS.md](docs/AGENTS.md) |
+| M0 验收 · 代理与镜像 | —— | [docs/testing.md](docs/testing.md) · [docs/development.md](docs/development.md) |
 | 准备声明「检查通过」 | [upkeeper-pre-push-checks](.agents/skills/upkeeper-pre-push-checks/SKILL.md) | [docs/testing.md](docs/testing.md) |
 
-声明任何检查通过之前，先真的跑过它；没跑的就写「未运行」，不写成隐式的通过。
+**`src/` 与 `src-tauri/` 的子树规则不会自动加载**（pi 只加载当前目录及其祖先的 `AGENTS.md`）；动这两个目录前先读各自的 `AGENTS.md`。
+
+声明检查通过之前先真的跑过；没跑的就写「未运行」。
 
 ## 修改本文件
 
