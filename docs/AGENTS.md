@@ -9,6 +9,7 @@ Every fact has one home — the tier whose job it is. Elsewhere, link there.
 | Tier | Job | Does NOT belong there |
 |---|---|---|
 | Root [AGENTS.md](../AGENTS.md) | Standing orders an agent needs in every session: one to three lines each, linking the owning document, plus the single repository status line; written in Chinese | Worked examples, step-by-step procedures, anything restated from a linked home |
+| Root [README.md](../README.md) / [README.en.md](../README.en.md) | The product front page for a reader who has just arrived: what it is, who it is for, the forms it manages, milestones, prerequisites, quick start, FAQ, and the documentation map. It may summarize what `docs/` owns, because onboarding needs one screen | Contracts (link them), anything untrue today, screenshots or downloads that do not exist, a summary that disagrees with its home |
 | [architecture.md](architecture.md) | The ordered map of the shipped source: layering, the pipeline stages, module ownership, the IPC surface | Per-provider detail (→ [providers.md](providers.md)), field-by-field config (→ [config-schema.md](config-schema.md)), rationale (→ Agent Notes) |
 | [environment.md](environment.md) | Measured machine facts with their probes and the re-measure procedure | Design intent, provider contracts, cleanup policy |
 | [execution-safety.md](execution-safety.md) | Spawning, proxy, elevation, timeout, cancellation, and teardown rules for child processes | Cleanup policy (→ [cleanup-rules.md](cleanup-rules.md)), per-app command lines (→ `config/apps.yaml`) |
@@ -33,9 +34,10 @@ Placement: incident evidence → postmortems; rationale → Agent Notes; procedu
 - **Document current state.** Keep history in git, Agent Notes, or a postmortem. Prose names live mechanisms, not changes or "not yet implemented" status.
 - **One physical line per paragraph**; use editor soft-wrap. Code blocks, tables, and list structure keep their formatting.
 - **Use relative Markdown links** for repo files and name issues or releases by number for anything outside the repo. A link must resolve at the time of the change.
-- **Do not restate a catalog that source owns.** Provider lists come from `src-tauri/src/providers/`, rule inventory from `config/apps.yaml`, command names from `src/ipc/`.
-- **No status annotations in prose or diagrams.** The only exceptions are the status line in root `AGENTS.md` and the one in [README.md](../README.md), which exist because a project that has not shipped must say so; [DESIGN.md#8](../DESIGN.md#8-里程碑与验收标准) owns milestone acceptance, and no other document writes "not built yet" — the absence of a file says it.
-- **The root `AGENTS.md` is Chinese; every other document is English.** Paths, commands, field names, and identifiers stay verbatim in either language and are never translated.
+- **Do not restate a catalog that source owns.** Provider lists come from `src-tauri/src/providers/`, rule inventory from `config/apps.yaml`, command names from `src/ipc/`. The root README pair is the one tier allowed to summarize for onboarding, and only with a link to each fact's home.
+- **A front page describes what exists.** Capability that is planned but absent is named as a milestone, never advertised as available; a screenshot of an interface that has not been built is not a screenshot.
+- **No status annotations in prose or diagrams.** The only exceptions are the status line in root `AGENTS.md` and the one in the README pair, which exist because a project that has not shipped must say so; [DESIGN.md#8](../DESIGN.md#8-里程碑与验收标准) owns milestone acceptance, and no other document writes "not built yet" — the absence of a file says it.
+- **Root `AGENTS.md` and `README.md` are Chinese; every other document is English.** The front page carries a paired English counterpart, `README.en.md`; the two keep the same sections in the same order and change together. Paths, commands, field names, and identifiers stay verbatim in either language and are never translated.
 - **State complete contracts, not reasoning transcripts.** Keep behaviour, failure, timing, ownership, limits, and safety facts; delete step narration, test walkthroughs, and code restatement.
 - **A code-adjacent doc updates in the same change as the code.** A field table that no longer matches `apps.yaml`, or a trait signature that no longer matches `providers.rs`, is a defect of the change that moved the code.
 - **Every non-trivial change adds or updates an [Agent Note](../.agents/notes/README.md)** in the same change.
@@ -48,17 +50,17 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 | Document | Ceiling |
 |---|---|
 | Root `AGENTS.md` | 1,550 |
-| `docs/AGENTS.md` (this file) | 1,250 |
+| `docs/AGENTS.md` (this file) | 1,500 |
 | `docs/architecture.md` | 1,600 |
-| `docs/environment.md` | 900 |
-| `docs/execution-safety.md` | 1,100 |
+| `docs/environment.md` | 950 |
+| `docs/execution-safety.md` | 1,150 |
 | `docs/cleanup-rules.md` | 1,000 |
-| `docs/config-schema.md` | 1,450 |
+| `docs/config-schema.md` | 1,500 |
 | `docs/providers.md` | 1,100 |
 | `docs/ui.md` | 800 |
 | `docs/development.md` | 900 |
 | `docs/testing.md` | 900 |
-| Root `README.md` | 450 |
+| Root `README.md` / `README.en.md` (front-page pair) | 2,000 each |
 | Subtree `AGENTS.md` | 500 |
 | Subtree `README.md` | 300 |
 | `.agents/notes/README.md` | 900 |

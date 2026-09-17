@@ -24,7 +24,7 @@ Upkeep 是一个只跑 Windows 的桌面控制台，把本机的应用更新与�
 ```
 AGENTS.md                 常驻规则（本文件）
 DESIGN.md                 v0.1 设计记录，2026-09-17 冻结
-README.md                 Upkeep 是什么、当前里程碑、文档索引
+README.md / README.en.md     中文（默认）与英文首页：是什么、适合谁、里程碑、快速开始、FAQ、文档地图
 config/apps.yaml          出厂默认的应用登记表
 docs/                     当前状态文档（标准见 docs/AGENTS.md）
   architecture.md         分层、流水线、IPC 面

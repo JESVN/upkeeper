@@ -36,7 +36,7 @@ A note is never edited into a different decision. Supersede it with a new note a
 
 ## The file format
 
-Until M0 adds `.agents/notes` validation to the doc gate, the format below is enforced by review. Every note is a single file — this project keeps no bilingual pairs, and the bilingual gloss convention in [AGENTS.md](../../AGENTS.md) applies to standing orders only.
+Until M0 adds `.agents/notes` validation to the doc gate, the format below is enforced by review. Every note is a single file — no bilingual counterpart, since the root [README pair](../../README.md) is the only paired document in this repository.
 
 ### Header
 

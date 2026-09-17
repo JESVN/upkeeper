@@ -10,7 +10,7 @@ Place and audit Upkeep documents using the tier taxonomy in [docs/AGENTS.md](../
 ## Place a new fact
 
 1. Name the fact in one sentence, with its actor and its subject.
-2. Ask which tier's job it is: standing order → root [AGENTS.md](../../../AGENTS.md); shipped structure or a stage contract → [architecture.md](../../../docs/architecture.md); a measured machine number → [environment.md](../../../docs/environment.md); a spawning, proxy, elevation, timeout, or teardown rule → [execution-safety.md](../../../docs/execution-safety.md); deletion policy → [cleanup-rules.md](../../../docs/cleanup-rules.md); a key, type, allowed value, or default → [config-schema.md](../../../docs/config-schema.md); a per-form contract → [providers.md](../../../docs/providers.md); a panel, badge, or interaction rule → [ui.md](../../../docs/ui.md); setup or a command → [development.md](../../../docs/development.md); required evidence → [testing.md](../../../docs/testing.md); a step-by-step procedure → [cookbook/](../../../docs/cookbook/README.md); an incident narrative → [postmortem/](../../../docs/postmortem/README.md); the why and what was given up → an [Agent Note](../../notes/README.md).
+2. Ask which tier's job it is: a standing order → root [AGENTS.md](../../../AGENTS.md); a summary a newcomer needs on arrival → the [README pair](../../../README.md), which links the home rather than owning the fact; shipped structure or a stage contract → [architecture.md](../../../docs/architecture.md); a measured machine number → [environment.md](../../../docs/environment.md); a spawning, proxy, elevation, timeout, or teardown rule → [execution-safety.md](../../../docs/execution-safety.md); deletion policy → [cleanup-rules.md](../../../docs/cleanup-rules.md); a key, type, allowed value, or default → [config-schema.md](../../../docs/config-schema.md); a per-form contract → [providers.md](../../../docs/providers.md); a panel, badge, or interaction rule → [ui.md](../../../docs/ui.md); setup or a command → [development.md](../../../docs/development.md); required evidence → [testing.md](../../../docs/testing.md); a step-by-step procedure → [cookbook/](../../../docs/cookbook/README.md); an incident narrative → [postmortem/](../../../docs/postmortem/README.md); the why and what was given up → an [Agent Note](../../notes/README.md).
 3. Search the distinctive phrase across the repo before writing. If it already lives somewhere, update that home instead of adding a second copy.
 4. Write it in the owning document, and replace whatever the old location said with a relative link.
 
@@ -26,6 +26,7 @@ Run the [slop checklist](../../../docs/AGENTS.md#the-slop-checklist) explicitly,
 4. **Reasoning transcripts** — step narration, test walkthroughs, and rejected local alternatives go to an Agent Note or nowhere.
 5. **Paragraph walls and emphasis inflation** — split them; keep bold for the clause that changes behaviour.
 6. **Links** — resolve every relative link and anchor in the changed files by hand until M0 installs a checker.
+7. **The front-page pair** — `README.md` and `README.en.md` must carry the same sections in the same order, and a fact changed in one is changed in the other in the same edit. A summary on the front page that no longer matches its home in `docs/` is a defect of whichever side moved.
 
 ## Check the budget
 
