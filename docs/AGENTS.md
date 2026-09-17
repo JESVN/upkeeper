@@ -32,7 +32,7 @@ Placement: incident evidence → postmortems; rationale → Agent Notes; procedu
 
 ## Writing rules
 
-- **Document current state.** Keep history in git, Agent Notes, or a postmortem. Prose names live mechanisms, not changes or "not yet implemented" status.
+- **Document current state.** Keep history in git, Agent Notes, or a postmortem; prose names live mechanisms, not changes or "not yet implemented" status.
 - **One physical line per paragraph**; use editor soft-wrap. Code blocks, tables, and list structure keep their formatting.
 - **Use relative Markdown links** for repo files and name issues or releases by number for anything outside the repo. A link must resolve at the time of the change.
 - **Do not restate a catalog that source owns.** Provider lists come from `src-tauri/src/providers/`, rule inventory from `config/apps.yaml`, command names from `src/ipc/`. The root README pair is the one tier allowed to summarize for onboarding, and only with a link to each fact's home.
@@ -46,7 +46,7 @@ Placement: incident evidence → postmortems; rationale → Agent Notes; procedu
 
 ## Word budgets
 
-The gate counts word-equivalents, not bytes: western text by whitespace, and each CJK character as 0.6 of a word — 1.7 characters per English word, which approximates their relative cost to a tokenizer. The script `scripts/doc-budgets.mjs` and the `doc-budgets` command arrive in M0; until then the ceilings are reviewed by hand.
+The gate counts word-equivalents, not bytes: western text by whitespace, each CJK character as 0.6 of a word (1.7 characters ≈ one English word, approximating their relative tokenizer cost). The script `scripts/doc-budgets.mjs` and the `doc-budgets` command arrive in M0; until then the ceilings are reviewed by hand.
 
 | Document | Ceiling |
 |---|---|
@@ -67,16 +67,19 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 | Subtree `README.md` | 300 |
 | `.agents/notes/README.md` | 900 |
 | Skill | 700 |
+| `upkeeper-handoff` skill | 750 |
+
+`upkeeper-handoff` carries two jobs (taking over, unattended work), hence its higher ceiling; another skill needing more room is doing two jobs and should be split.
 
 A field reference carries a larger ceiling than prose because table cells convey less per word.
 
 When the gate goes red:
 
 1. **Relocate** content that belongs in another tier and leave a one-line link.
-2. **Condense** content that belongs here but can be shorter.
+2. **Condense** content that belongs here but reads long.
 3. **Raise** the ceiling only when the content genuinely needs the space; justify the diff. A ceiling that is too low is a budget bug.
 
-Ceilings are guardrails, not reduction targets. Keep at least 5% headroom under a ceiling that is currently satisfied; freeze a ceiling that is exceeded until relocation or condensation brings the document back under it.
+Ceilings are guardrails, not targets. Keep ≥5% headroom under a satisfied ceiling; freeze an exceeded one until relocation or condensation brings it back under.
 
 ## The slop checklist
 

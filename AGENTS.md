@@ -57,7 +57,7 @@ src-tauri/                Rust 内核（子树规则：src-tauri/AGENTS.md）
 - **注释与文档写完整契约，不写推理过程**（[标准](docs/AGENTS.md#writing-rules)）。
 - **git 提交信息写中文**：`类型: 中文说明`，类型用 `feat` / `fix` / `docs` / `design` / `chore` / `refactor` / `test`。
 - **非平凡改动在同一次改动里补一篇 Agent Note** 并更新对应文档；只有机械或局部编辑可豁免（[范围](.agents/notes/README.md#when-to-write-one)）。
-- **进度与接手看 `.agents/progress.md`**：写入规则在文件顶部，接手流程见 [upkeeper-handoff](.agents/skills/upkeeper-handoff/SKILL.md)。
+- **进度与接手看 `.agents/progress.md`**：写入规则在文件顶部（含「可逆性分流」），接手与无人值守规则见 [upkeeper-handoff](.agents/skills/upkeeper-handoff/SKILL.md)。
 - **`unsafe` 只允许出现在 `src/platform/`**，且必须注释它依赖的不变量。
 
 ## 防御性模式

@@ -40,6 +40,14 @@ Setup and daily workflow. The components this machine already has are listed in 
 
 **Verify M0.** `pnpm tauri dev` opens a window that renders the empty shell, `cargo build` completes offline after the first successful build, and `git status` shows no generated artifacts inside the tracked source directories.
 
+### Running M0 unattended
+
+M0 is the one milestone safe to run overnight: it installs tooling and scaffolds directories, and nothing it does is destructive or hard to reverse. Three things make it work without a person present:
+
+- **No questions.** The handoff skill forbids the question tool during unattended work; the decision rule and its two lists are in [`.agents/progress.md`](../.agents/progress.md). M0's own decisions — Tailwind `@theme` file layout, scaffold option spellings, mirror versus proxy — are all reversible, so they belong in the unattended decision log rather than in a prompt nobody will answer.
+- **The proxy step is not optional.** `rustup` and `cargo` ignore the Windows system proxy, so step 1 must run before anything is downloaded. A first run that stalls on a fetch is this, not a broken network.
+- **A failed fetch is not a failed milestone.** Report where it stopped, leave the partial download in place, and record which step needs a second attempt. Do not retry a third time against the same source; change the source or the proxy instead.
+
 ## Daily workflow
 
 ```sh
