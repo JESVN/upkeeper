@@ -21,6 +21,16 @@ Setup and daily workflow. The components this machine already has are listed in 
    rustc --version; cargo --version      # verify: both print a version, no network error
    ```
 
+   **Where it lands.** `RUSTUP_HOME` and `CARGO_HOME` default to the user profile on C: (3–5 GB total); this machine keeps the default, and [environment.md](environment.md#toolchain-and-prerequisites) records why. To place them elsewhere, set both **before** running the installer and persist them as user environment variables, or a later shell cannot find the toolchain:
+
+   ```powershell
+   $env:RUSTUP_HOME = "G:\Dev\rustup"; $env:CARGO_HOME = "G:\Dev\cargo"
+   [Environment]::SetEnvironmentVariable('RUSTUP_HOME', $env:RUSTUP_HOME, 'User')
+   [Environment]::SetEnvironmentVariable('CARGO_HOME',  $env:CARGO_HOME,  'User')
+   ```
+
+   Unattended runs keep the default and log it as a reversible decision; moving them later costs one re-install.
+
 3. Prefer a mirror over a proxy for the package index, because a mirror survives a proxy port change. `%USERPROFILE%\.cargo\config.toml`:
 
    ```toml

@@ -1,6 +1,6 @@
 ---
 name: upkeeper-handoff
-description: Take over Upkeep development in a fresh session — or run it unattended. Use when a new session continues earlier work (用户说 接着做/继续/交接 or pastes a bare task like "做 M0"), when the previous conversation ran out of context, or when the user leaves for the night (无人值守) and work must not stall on a question. Rebuilds the task, its acceptance criteria, and the constraints in force before touching anything, and refuses to start while the record is missing or ambiguous.
+description: Take over Upkeep development in a fresh session — or run it unattended. Use when a new session continues earlier work (用户说 接着做/继续/交接 or pastes a bare task like "做 M0"), when the previous conversation ran out of context, or when the user leaves and wants work to continue without them (无人值守/我去睡觉/别问我/我出门了/unattended) so nothing stalls on an unanswered question. Rebuilds the task, its acceptance criteria, and the constraints in force before touching anything, and refuses to start while the record is missing or ambiguous.
 ---
 
 # 接手上一个会话的开发
@@ -46,4 +46,4 @@ description: Take over Upkeep development in a fresh session — or run it unatt
 
 **硬规则：不得调用问答工具** —— 它会把会话停在那里等人，正是这个模式要避免的。需要用户输入时按 [progress.md](../../progress.md) 顶部的**可逆性分流**处理：可逆的自选并记入「自主决定」，不可逆或涉外的记入「待用户确认」并跳过、继续做别的。
 
-**不因一个问题阻塞整体。** 卡住就跳到下一个可做步骤；真正无步骤可做时，总结「做到哪里、哪些在等确认」再停。
+**不因一个问题阻塞整体**：卡住就跳到下一个可做步骤；真正无步骤可做时，总结「做到哪里、哪些在等确认」再停。退出条件见 progress.md 的分流规则。

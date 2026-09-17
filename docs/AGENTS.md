@@ -53,14 +53,14 @@ The gate counts word-equivalents, not bytes: western text by whitespace, each CJ
 | Root `AGENTS.md` | 1,650 |
 | `docs/AGENTS.md` (this file) | 1,600 |
 | `docs/architecture.md` | 1,800 |
-| `docs/environment.md` | 1,350 |
+| `docs/environment.md` | 1,500 |
 | `docs/execution-safety.md` | 1,150 |
 | `docs/cleanup-rules.md` | 1,000 |
 | `docs/config-schema.md` | 1,800 |
 | `docs/providers.md` | 1,700 |
 | `docs/ui.md` | 950 |
 | `docs/style-direction.md` | 2,800 |
-| `docs/development.md` | 900 |
+| `docs/development.md` | 1,000 |
 | `docs/testing.md` | 950 |
 | Root `README.md` / `README.en.md` (front-page pair) | 2,200 each |
 | Subtree `AGENTS.md` | 550 |

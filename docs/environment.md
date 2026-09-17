@@ -88,8 +88,18 @@ Upkeep's own HTTP reads the registry and builds its client with an explicit prox
 | Windows SDK | 10.0.19041, 22621, 26100 |
 | WebView2 runtime | 153.0.4234.32 |
 | Node / npm | v24.18.0 / 12.0.0 |
-| Disk | G: 127 GB free (a Rust build tree costs 3–5 GB) |
-| Rust toolchain | not installed — M0 installs rustup (~1.5–2 GB) |
+| Disk | C: 170.8 GB free (Samsung 970 EVO Plus NVMe), G: 126.3 GB free (KINGBANK KP230) |
+| Rust toolchain | not installed — M0 installs rustup (measured download 118 MB: rustup-init 12.1 + rustc 68 + rust-std 22 + cargo 9.8 + clippy 3.8 + rustfmt 2.5) |
+
+### Where Rust keeps its files
+
+`RUSTUP_HOME` (`%USERPROFILE%\.rustup`, the toolchain, ~1.5–2 GB) and `CARGO_HOME` (`%USERPROFILE%\.cargo`, the registry cache, ~1–2.5 GB) default to the user profile on C:. This machine keeps that default:
+
+- **Space is not the constraint.** 3–5 GB against 170 GB free on C:, and the largest single directory — `src-tauri/target` at 3–5 GB — is already on G:.
+- **C: is the faster disk.** Samsung 970 EVO Plus versus the KINGBANK KP230 holding G:. Rust builds are random-I/O heavy and the registry cache is read on every build.
+- **Moving is cheap and reversible**, so the default needs no justification beyond convenience. The procedure is in [development.md](development.md#bootstrap-without-a-working-system-proxy); it must happen before the installer runs, and both variables have to be persisted as user environment variables.
+
+pnpm needs no such decision: it places its store on the drive holding the project, so `G:\.pnpm-store` serves this repository without configuration.
 
 ## Re-measuring
 
