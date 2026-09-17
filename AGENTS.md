@@ -35,6 +35,7 @@ docs/                     当前状态文档（标准见 docs/AGENTS.md）
   config-schema.md        apps.yaml 与 settings 的逐字段参考
   providers.md            Provider trait 契约、五种机制与管理器表
   ui.md                   面板、徽标、每个面板消费的事件
+  style-direction.md      视觉风格方向：逐项参考评估、采用约束、不采用项（中文）
   development.md          工具链前提、代理/镜像配置、目标命令
   testing.md              每个里程碑必须拿出的证据
   cookbook/               带验证步骤的操作手册

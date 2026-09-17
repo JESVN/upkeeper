@@ -4,6 +4,9 @@ dist/
 src-tauri/target/
 src-tauri/gen/
 
+# Style reconnaissance: reference repositories cloned for analysis only, never shipped
+_recon/
+
 # Local tooling
 .vscode/
 .idea/

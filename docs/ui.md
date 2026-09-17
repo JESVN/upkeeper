@@ -2,6 +2,8 @@
 
 Seven panels in one window. The UI renders state that Core produced and sends back only plans and ids; it never derives a version, decides an update, or touches the filesystem. View-model rules here, component implementation in `src/`.
 
+The visual direction these panels are drawn in — colour base, type roles, density, and its constraints — is [style-direction.md](style-direction.md).
+
 ## Panels
 
 | Panel | Shows | Reads |

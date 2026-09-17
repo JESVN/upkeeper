@@ -16,7 +16,8 @@ Every fact has one home — the tier whose job it is. Elsewhere, link there.
 | [cleanup-rules.md](cleanup-rules.md) | Matching semantics, the three hard rules, and the review checklist for a new rule | The `Rule` field reference (→ [config-schema.md](config-schema.md)) |
 | [config-schema.md](config-schema.md) | Field-by-field reference for `apps.yaml`: every key, allowed value, default, and interaction | Rationale for a chosen default (→ Agent Note), measured sizes (→ environment.md) |
 | [providers.md](providers.md) | The `Provider` trait contract, the five mechanisms, the manager table, the `declarative` fallback, `latest` source chains | Implementation narration of one mechanism (→ its source file header) |
-| [ui.md](ui.md) | Panels, states and badges, which event drives which panel, interaction rules | Component implementation and styling (→ `src/`) |
+| [ui.md](ui.md) | Panels, states and badges, which event drives which panel, interaction rules | Component implementation and styling (→ `src/`), colour and type (→ [style-direction.md](style-direction.md)) |
+| [style-direction.md](style-direction.md) | The aesthetic direction: the evidence from each reference, the constraints adopted, the rejected options, and the questions blocking a freeze. Chinese, because its reviewer is the author | Panel behaviour (→ [ui.md](ui.md)), token values (→ the visual identity file, written in the [design.md](https://github.com/google-labs-code/design.md) format), component specs |
 | [development.md](development.md) | Toolchain prerequisites, proxy and mirror setup, daily workflow, the command surface | Milestone acceptance evidence (→ [testing.md](testing.md)), standing rules (→ AGENTS.md) |
 | [testing.md](testing.md) | Required evidence per milestone, test layout and lanes | One-off manual procedures (→ the owning cookbook) |
 | [cookbook/](cookbook/README.md) | Step-by-step how-tos with numbered verify steps | Design rationale (→ the Agent Note each guide links) |
@@ -37,7 +38,7 @@ Placement: incident evidence → postmortems; rationale → Agent Notes; procedu
 - **Do not restate a catalog that source owns.** Provider lists come from `src-tauri/src/providers/`, rule inventory from `config/apps.yaml`, command names from `src/ipc/`. The root README pair is the one tier allowed to summarize for onboarding, and only with a link to each fact's home.
 - **A front page describes what exists.** Capability that is planned but absent is named as a milestone, never advertised as available; a screenshot of an interface that has not been built is not a screenshot.
 - **No status annotations in prose or diagrams.** The only exceptions are the status line in root `AGENTS.md` and the one in the README pair, which exist because a project that has not shipped must say so; [DESIGN.md#8](../DESIGN.md#8-里程碑与验收标准) owns milestone acceptance, and no other document writes "not built yet" — the absence of a file says it.
-- **Root `AGENTS.md` and `README.md` are Chinese; every other document is English.** The front page carries a paired English counterpart, `README.en.md`; the two keep the same sections in the same order and change together. Paths, commands, field names, and identifiers stay verbatim in either language and are never translated.
+- **Root `AGENTS.md`, `README.md`, and `docs/style-direction.md` are Chinese; every other document is English.** The front page carries a paired English counterpart, `README.en.md`; the two keep the same sections in the same order and change together. The aesthetic direction is Chinese because the person who reviews it is the repository's author, and reviewing tone and taste in a second language is where that review fails. Paths, commands, field names, and identifiers stay verbatim in either language and are never translated. Agent Notes stay English even when they record a Chinese-source decision.
 - **State complete contracts, not reasoning transcripts.** Keep behaviour, failure, timing, ownership, limits, and safety facts; delete step narration, test walkthroughs, and code restatement.
 - **A code-adjacent doc updates in the same change as the code.** A field table that no longer matches `apps.yaml`, or a trait signature that no longer matches `providers.rs`, is a defect of the change that moved the code.
 - **Every non-trivial change adds or updates an [Agent Note](../.agents/notes/README.md)** in the same change.
@@ -50,7 +51,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 | Document | Ceiling |
 |---|---|
 | Root `AGENTS.md` | 1,750 |
-| `docs/AGENTS.md` (this file) | 1,500 |
+| `docs/AGENTS.md` (this file) | 1,600 |
 | `docs/architecture.md` | 1,800 |
 | `docs/environment.md` | 1,350 |
 | `docs/execution-safety.md` | 1,150 |
@@ -58,6 +59,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 | `docs/config-schema.md` | 1,800 |
 | `docs/providers.md` | 1,700 |
 | `docs/ui.md` | 950 |
+| `docs/style-direction.md` | 6,200 |
 | `docs/development.md` | 900 |
 | `docs/testing.md` | 950 |
 | Root `README.md` / `README.en.md` (front-page pair) | 2,200 each |
