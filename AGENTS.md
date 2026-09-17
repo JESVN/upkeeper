@@ -27,49 +27,37 @@ AGENTS.md                 常驻规则（本文件）
 DESIGN.md                 设计记录（定稿后冻结）
 README.md / README.en.md  中英文首页
 config/apps.yaml          出厂默认的应用登记表
-docs/                     当前状态文档：架构、实测环境、执行安全、清理规则、配置 schema（apps.yaml 逐字段）、
-                          Provider 契约、界面、视觉方向、开发与测试、操作手册、故障故事
-                          （每篇的职责见 docs/AGENTS.md）
-.agents/notes/            决策记录；.agents/skills/  按需加载的工作流；.agents/progress.md  开发进度
+docs/                     当前状态文档，每篇职责见 docs/AGENTS.md
+.agents/                  notes/ 决策记录 · skills/ 按需加载的工作流 · progress.md 开发进度
 scripts/                  仓库内辅助脚本；omp 的 PowerShell 基准脚本留在仓库外
-src/                      React 前端（子树规则：src/AGENTS.md）
-  ipc/                    唯一允许出现命令名与事件名的地方
+src/                      React 前端（子树规则：src/AGENTS.md）；ipc/ 是唯一允许出现命令名与事件名的地方
 src-tauri/                Rust 内核（子树规则：src-tauri/AGENTS.md）
-  src/commands/           #[tauri::command] 薄适配
   src/core/               config → scan → plan → exec → verify → clean → history
   src/providers/          一种机制一个文件 + 管理器表
   src/platform/           唯一允许碰 Win32、注册表、HTTP、进程表的地方
-  src/state/              state.json、history.jsonl、日志
 ```
 
 ## 命令
 
-这套命令由 M0 建立；在那之前它们都不存在。完整清单与代理/镜像步骤见 [docs/development.md](docs/development.md)：
-
-```sh
-pnpm install && pnpm tauri dev      # 依赖与开发窗口（需 Rust 工具链）
-pnpm tauri build                    # NSIS / MSI 到 src-tauri/target
-pnpm typecheck && pnpm test         # 前端类型检查与单测
-cargo fmt --check && cargo clippy -- -D warnings && cargo test   # 在 src-tauri/ 内
-pnpm run doc-budgets                # docs/AGENTS.md 的字数上限
-```
+这套命令由 M0 建立；在那之前它们都不存在。完整清单、依赖与代理/镜像步骤见 [docs/development.md](docs/development.md)：`pnpm install && pnpm tauri dev`（开发窗口，需 Rust 工具链）· `pnpm tauri build`（NSIS / MSI）· `pnpm typecheck && pnpm test` · `cargo fmt --check && cargo clippy -- -D warnings && cargo test`（在 `src-tauri/` 内）· `pnpm run doc-budgets`。
 
 `rustup` 与 `cargo` 不读 Windows 系统代理：首次构建前给该进程单独导出 `HTTPS_PROXY`，或配置镜像源（[步骤](docs/development.md#bootstrap-without-a-working-system-proxy)）。
 
 ## 约定
 
-- **`commands/` 是边界，不是一层；UI 文案集中在 `src/lib/`。** 命令只做参数校验、调 `core`、返回带类型的结果，业务逻辑与 Win32 调用绝不出现在那里；组件里不写任何用户可见字符串，文案只在文案模块里新增。
+- **主代理做脑、子代理做手，但不是必须派发。** 分析、计划、验收以及与用户的确认留在主代理；查找、具体实现、重复或可并行的操作用子代理（[implementer](.pi/agents/implementer.md) 已锁 `thinking: high`，本机默认 `max` 下即低一级）。硬判断与最终结论仍由主代理给出，子代理的结论要核实。串行的小改动直接做，不为流程而派发。
+- **`commands/` 是边界，不是一层；UI 文案集中在 `src/lib/`。** 命令只做参数校验、调 `core`、返回带类型的结果；组件里不写用户可见字符串，文案只在文案模块新增。
 - **所有可调项都是 `apps.yaml` 的 `settings:` 字段。** 不拿 `DEFAULT_*` 常量冒充可配置；协议常量、注册表路径与清理安全规则固定写在代码里。
-- **IPC 载荷类型只在一处定义**（[docs/architecture.md](docs/architecture.md#ipc-surface)）并在两端镜像；命令名与事件名的字符串字面量只允许出现在 `src/ipc/`。
-- **进度事件在工作单元成功之后才 emit**，绝不提前，这样 UI 不可能显示没发生过的事（[事件表](docs/architecture.md#ipc-surface)）。
-- **历史只追加 JSONL。** `state.json` 是带 `checked_at` 的缓存，绝不是「发生过什么」的事实来源（[history](docs/architecture.md#history)）。
-- **失败必须携带 `app_id`、阶段、`exit_code` 与日志路径。** 每个红行都能一键打开它自己的日志。
+- **IPC 载荷类型只在一处定义**（[docs/architecture.md](docs/architecture.md#ipc-surface)）并在两端镜像；命令名与事件名的字面量只允许出现在 `src/ipc/`。
+- **进度事件在工作单元成功之后才 emit**，绝不提前（[事件表](docs/architecture.md#ipc-surface)）。
+- **历史只追加 JSONL。** `state.json` 是带 `checked_at` 的缓存，不是「发生过什么」的事实来源（[history](docs/architecture.md#history)）。
+- **失败必须携带 `app_id`、阶段、`exit_code` 与日志路径**，每个红行都能打开它自己的日志。
 - **提权结果经临时文件回传**（UAC 会切断管道）；**取消要杀整棵进程树**（[原因](docs/execution-safety.md#elevation)）。
-- **每次更新后都必须校验** —— 版本变化或哈希断言，并记入历史；没有校验的更新不算成功（[verify](docs/architecture.md#verify)）。
+- **每次更新后都必须校验** —— 版本变化或哈希断言并记入历史；没有校验的更新不算成功（[verify](docs/architecture.md#verify)）。
 - **注释与文档写完整契约，不写推理过程**（[标准](docs/AGENTS.md#writing-rules)）。
-- **git 提交信息写中文**：`类型: 中文说明`，类型用 `feat` / `fix` / `docs` / `design` / `chore` / `refactor` / `test`；标题与正文都用中文。
-- **非平凡改动必须在同一次改动里补一篇 Agent Note** 并更新对应文档；只有机械或局部编辑可豁免（[范围](.agents/notes/README.md#when-to-write-one)）。
-- **进度与接手看 `.agents/progress.md`**：它的写入规则在文件顶部，接手流程见 [upkeeper-handoff](.agents/skills/upkeeper-handoff/SKILL.md)。
+- **git 提交信息写中文**：`类型: 中文说明`，类型用 `feat` / `fix` / `docs` / `design` / `chore` / `refactor` / `test`。
+- **非平凡改动在同一次改动里补一篇 Agent Note** 并更新对应文档；只有机械或局部编辑可豁免（[范围](.agents/notes/README.md#when-to-write-one)）。
+- **进度与接手看 `.agents/progress.md`**：写入规则在文件顶部，接手流程见 [upkeeper-handoff](.agents/skills/upkeeper-handoff/SKILL.md)。
 - **`unsafe` 只允许出现在 `src/platform/`**，且必须注释它依赖的不变量。
 
 ## 防御性模式
