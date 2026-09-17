@@ -50,7 +50,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, and eac
 
 | Document | Ceiling |
 |---|---|
-| Root `AGENTS.md` | 1,750 |
+| Root `AGENTS.md` | 1,650 |
 | `docs/AGENTS.md` (this file) | 1,600 |
 | `docs/architecture.md` | 1,800 |
 | `docs/environment.md` | 1,350 |
