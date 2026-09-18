@@ -122,7 +122,7 @@
 
 - 确切提交号（`--depth 1` 克隆的浮动 main 不可重现，故钉住）：ui-design-agent-kit `2b8cb68`（无许可）、cloner `a53892c`（MIT）、design.md `9bf8eae`（Apache-2.0）、flexoki `8d723ba`（MIT，Copyright © 2023 Steph Ango）、taste-skill `e79ca9e`（MIT）、huashu `c4b8367`（MIT）。详见 `_recon/REFS.md`。
 - **可搬与不可搬**：只允许把参考转写为约束与判据；唯一例外是 flexoki 的色值（MIT 允许复制，但写进 `docs/visual-identity.md` 时必须带版权与许可声明）。
-- 6 个上游仓库的完整克隆（180 MB）已删除，只留 `_recon/quoted/`（164 KB / 11 文件）与 `_recon/REFS.md`；`_recon/` 整个目录不进 git。
+- 6 个上游仓库的完整克隆（180 MB）已删除，它们之中只留下 `_recon/quoted/`（164 KB / 11 文件）与 `_recon/REFS.md`；`_recon/` 整个目录不进 git。
 
 ## 后续
 

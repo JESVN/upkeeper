@@ -30,6 +30,7 @@ config/apps.yaml          出厂默认的应用登记表
 docs/                     当前状态文档，每篇职责见 docs/AGENTS.md
 .agents/                  notes/ 决策记录 · skills/ 按需加载的工作流 · progress.md 开发进度
 scripts/                  仓库内辅助脚本；omp 的 PowerShell 基准脚本留在仓库外
+_recon/                   外部参考项目的克隆与引用集（不进 git）；克隆一律放这里，分析完只留 quoted/ 与 REFS.md
 src/                      React 前端（子树规则：src/AGENTS.md）；ipc/ 是唯一允许出现命令名与事件名的地方
 src-tauri/                Rust 内核（子树规则：src-tauri/AGENTS.md）
   src/core/               config → scan → plan → exec → verify → clean → history
