@@ -40,8 +40,8 @@
 | `#0078D4` 作细线/文字 on 暗底 `#1C1B1A` | **3.80:1** | **不合格** |
 | `#0078D4` 作细线/文字 on 纸底 `#FFFCF0` | 4.41:1 | 不合格 |
 | flexoki blue-600 `#205EA6` on 纸底 | 6.36:1 | 合格（回退用） |
-| flexoki blue-500 `#4385BE` on 暗底 | 4.37:1 | AA 边缘（回退用） |
-| flexoki orange-500 `#DA702C` on 暗底 | 5.19:1 | 合格（回退用） |
+| flexoki blue-400 `#4385BE` on 暗底 | 4.37:1 | 不合格（文字用途；改取 blue-300 `#66A0C8` 6.08:1） |
+| flexoki orange-400 `#DA702C` on 暗底 | 5.19:1 | 合格（回退用） |
 | 墨 `#100F0F` on 纸 `#FFFCF0` | 18.62:1 | AAA |
 | 亮字 `#F2F0E5` on `#1C1B1A` | 15.04:1 | AAA |
 
@@ -67,10 +67,12 @@
 1. contrast(A, B)
 2. 填充 ≥ 4.5（带白字时另取白字或墨字较优者）；图形/边框 ≥ 3.0；文字 ≥ 4.5
 3. 不满足则映射到同色相 flexoki 阶：
-   蓝径 → blue-600 #205EA6（on 纸 6.36:1）/ blue-500 #4385BE（on 暗 4.37:1）
-   橙径 → orange-600 #BC5215 / orange-500 #DA702C（on 暗 5.19:1）
+   蓝径 → blue-600（on 纸）/ blue-400（on 暗）
+   橙径 → orange-600（on 纸）/ orange-400（on 暗）
 4. 仍不满足则告警，不静默降级
 ```
+
+阶名的具体色值与两套实测对比度见 [docs/visual-identity.md](visual-identity.md#the-accent-and-its-correction-layer)（那里是令牌的唯一归属）。
 
 它是 token 计算函数，不是手写死值；在 design.md lint 里对明暗两侧各验一次。
 
@@ -121,6 +123,7 @@
 ## 引用与许可
 
 - 确切提交号（`--depth 1` 克隆的浮动 main 不可重现，故钉住）：ui-design-agent-kit `2b8cb68`（无许可）、cloner `a53892c`（MIT）、design.md `9bf8eae`（Apache-2.0）、flexoki `8d723ba`（MIT，Copyright © 2023 Steph Ango）、taste-skill `e79ca9e`（MIT）、huashu `c4b8367`（MIT）。详见 `_recon/REFS.md`。
+- 强调色的回退值用阶名引用色阶（如 blue-600），具体色值与明暗两套值写在 [docs/visual-identity.md](visual-identity.md)，那里是令牌的唯一归属。
 - **可搬与不可搬**：只允许把参考转写为约束与判据；唯一例外是 flexoki 的色值（MIT 允许复制，但写进 `docs/visual-identity.md` 时必须带版权与许可声明）。
 - 6 个上游仓库的完整克隆（180 MB）已删除，它们之中只留下 `_recon/quoted/`（164 KB / 11 文件）与 `_recon/REFS.md`；`_recon/` 整个目录不进 git。
 

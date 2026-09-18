@@ -17,7 +17,8 @@ Every fact has one home — the tier whose job it is. Elsewhere, link there.
 | [config-schema.md](config-schema.md) | Field-by-field reference for `apps.yaml`: every key, allowed value, default, and interaction | Rationale for a chosen default (→ Agent Note), measured sizes (→ environment.md) |
 | [providers.md](providers.md) | The `Provider` trait contract, the five mechanisms, the manager table, the `declarative` fallback, `latest` source chains | Implementation narration of one mechanism (→ its source file header) |
 | [ui.md](ui.md) | Panels, states and badges, which event drives which panel, interaction rules | Component implementation and styling (→ `src/`), colour and type (→ [style-direction.md](style-direction.md)) |
-| [style-direction.md](style-direction.md) | The aesthetic direction: the evidence from each reference, the constraints adopted, the rejected options, and the questions blocking a freeze. Chinese, because its reviewer is the author | Panel behaviour (→ [ui.md](ui.md)), token values (→ the visual identity file, written in the [design.md](https://github.com/google-labs-code/design.md) format), component specs |
+| [style-direction.md](style-direction.md) | The aesthetic direction: the evidence from each reference, the constraints adopted, the rejected options, and the questions blocking a freeze. Chinese, because its reviewer is the author | Panel behaviour (→ [ui.md](ui.md)), token values (→ [visual-identity.md](visual-identity.md)), component specs |
+| [visual-identity.md](visual-identity.md) | The normative token values (colours, type, radii, spacing, components) in the [design.md](https://github.com/google-labs-code/design.md) format, plus the contrast table behind every value and the accent correction layer | Direction and reference evidence (→ [style-direction.md](style-direction.md)), panel behaviour (→ [ui.md](ui.md)), the Tailwind entry itself (→ `src/styles/`) |
 | [development.md](development.md) | Toolchain prerequisites, proxy and mirror setup, daily workflow, the command surface | Milestone acceptance evidence (→ [testing.md](testing.md)), standing rules (→ AGENTS.md) |
 | [testing.md](testing.md) | Required evidence per milestone, test layout and lanes | One-off manual procedures (→ the owning cookbook) |
 | [cookbook/](cookbook/README.md) | Step-by-step how-tos with numbered verify steps | Design rationale (→ the Agent Note each guide links) |
@@ -60,6 +61,7 @@ The gate counts word-equivalents, not bytes: western text by whitespace, each CJ
 | `docs/providers.md` | 1,700 |
 | `docs/ui.md` | 950 |
 | `docs/style-direction.md` | 2,800 |
+| `docs/visual-identity.md` | 2,200 |
 | `docs/development.md` | 1,000 |
 | `docs/testing.md` | 950 |
 | Root `README.md` / `README.en.md` (front-page pair) | 2,200 each |
