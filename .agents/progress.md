@@ -38,9 +38,9 @@
 
 ## 未决
 
-- **视觉令牌尚未成文**：`docs/visual-identity.md` 还没写（design.md 格式 + 对比度实测表）。`src/styles/tailwind.css` 目前只声明外壳用到的那几个值，六个状态色与强调色修正层都还没进代码。
-- **应用图标仍是 Tauri 默认图标**（已确认凑合到 M5）：`src-tauri/icons/*` 是脚手架生成的，等视觉识别文档写好后替换。
+- **主方向 vs 兜底方向的对比评审（已排期）**：M1 落地后、写第一个真面板之前做一次，输入是 [_recon/DeskBox/](../_recon/DeskBox) 的 8 张截图（兜底「原生精修」的落地参考）与 [docs/visual-identity.md](../docs/visual-identity.md) 的令牌。结论只有两种：主方向继续，或按兜底把中性底改冷、圆角改 8px 并更新令牌。仍未定的是首次对比的**触发条件**——方向文档写的是「实测（夜间模式、HDR、非 100% 缩放、Mica 叠加）中反复显脏」——但那是跑起来之后的事，现在只能先按上面对比一次。
 - **前端测试栏是空的**：`pnpm test`（vitest 5）0 个测试文件、`passWithNoTests` 下返回 0。M1 起按 [docs/testing.md](../docs/testing.md#layout) 补 view model 测试。
+- **令牌还没进代码**：`docs/visual-identity.md` 已定稿并通过 linter，但 `src/styles/tailwind.css` 仍只声明外壳用到的几个值；六个状态色、强调色修正层、中性 alpha 阶梯都等第一个面板落地时再接（按方向文档的约定：**组件直接读原始强调色算缺陷**）。
 
 ## 待用户确认
 
