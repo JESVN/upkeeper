@@ -17,8 +17,12 @@ color: cyan
 
 **关于思考等级**：`thinking: high` 是**锁死的绝对值**（frontmatter 权威，调用参数无法覆盖）。本机 `defaultThinkingLevel` 为 `max`，因此它等于「比主代理低一级」。
 
-**它的适用范围有边界**，需要更低档的子代理时不要改这里，改用内置的 `general-purpose` 并传 `thinking` 参数：
+**需要另一个档位时，新建一个 agent 文件，不要靠调用方记得传参。** `.pi/agents/<name>.md` 与 `.agents/agents/<name>.md` 都在项目里、都进 git，档位写在它的 frontmatter 里由主代理按名派发；传参是自觉，frontmatter 是机制。
 
-- 主代理 `max` 或 `xhigh` → 本代理低一级 ✅
-- 主代理降到 `high` → 同等级（此时应改用 `general-purpose` 传更低档）
-- 主代理降到 `medium` 以下 → 本代理反而更高，必须换用 `general-purpose`
+| 情形 | 做法 |
+|---|---|
+| 需要比本代理更低档 | 建一个 `thinking:` 更低的 agent 文件 |
+| 主代理自己降到 `high` | 本代理与它同级，改用新建的文件 |
+| 主代理降到 `medium` 以下 | 本代理反而更高，必须换用别的 agent 文件 |
+
+同一个理由：pi-subagents 的内置 `Explore` / `Plan` 都没有 `thinking` 字段，默认继承主会话档位。本项目已用 [Explore.md](Explore.md) 把 `Explore` 覆盖成 `high`；`Plan` 有意未覆盖，仍继承。
