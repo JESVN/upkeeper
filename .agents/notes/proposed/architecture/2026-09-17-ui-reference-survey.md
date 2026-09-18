@@ -194,7 +194,7 @@ Observable evidence (a site, not a repository; no matching GitHub repository was
 
 **Verdict: aesthetic vocabulary only** — flatness, temperature inside the neutral ramp, continuous composition as repeating dividers; never an interface paradigm, and no asset is copied. Its "gold" must **not** be translated into a coloured accent, since the accent belongs to the system setting.
 
-## How the references combine
+## Proposal
 
 The seven references sit at different layers, so "choose exactly one" does not apply:
 

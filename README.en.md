@@ -95,6 +95,7 @@ One rule runs through all of it: **side effects exist only in Core, and every mu
 | **M2** | Batch update (self-updating CLIs + global npm) with live progress and proxy injection | `omp` / `pi` upgrade in one click; no proxy residue in the parent; failure isolation works |
 | **M3** | Cleanup engine and rollback | The manifest checks out; the reclaimed total is quantifiable; zero damage to login state or the installed version |
 | **M4** | Chocolatey (UAC), desktop-application links, portable-application links, settings | Elevation completes; desktop applications are notified about, never updated |
+| **M5** | Universal adoption: the manager table (winget first), the `declarative` form, discovery candidates | A winget-upgradeable application is adopted in one click; adding an application is a config change; discovery writes nothing until the user confirms |
 
 Required evidence: [docs/testing.md](docs/testing.md). Full acceptance criteria: [DESIGN.md](DESIGN.md#8-里程碑与验收标准).
 

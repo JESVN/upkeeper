@@ -38,19 +38,13 @@
 
 ## 未决
 
-- **`notes-format` 为红：** [调研记录](notes/proposed/architecture/2026-09-17-ui-reference-survey.md) 没有 `## Proposal` 小节（它的等价内容是 `## How the references combine`），而 [.agents/notes/README.md](notes/README.md) 的 `proposed/` 表格把它列为必需。两种修法见「待用户确认」。
 - **视觉令牌尚未成文**：`docs/visual-identity.md` 还没写（design.md 格式 + 对比度实测表）。`src/styles/tailwind.css` 目前只声明外壳用到的那几个值，六个状态色与强调色修正层都还没进代码。
-- **应用图标仍是 Tauri 默认图标**：`src-tauri/icons/*` 是脚手架生成的，等视觉识别文档写好后替换。
+- **应用图标仍是 Tauri 默认图标**（已确认凑合到 M5）：`src-tauri/icons/*` 是脚手架生成的，等视觉识别文档写好后替换。
 - **前端测试栏是空的**：`pnpm test`（vitest 5）0 个测试文件、`passWithNoTests` 下返回 0。M1 起按 [docs/testing.md](../docs/testing.md#layout) 补 view model 测试。
-- **README 里程碑表只到 M4**（[DESIGN.md](../DESIGN.md#8-里程碑与验收标准) 有 M5），双语两份都一样；没擅自补行。
 
 ## 待用户确认
 
-- **调研笔记的格式冲突（唯一一条红灯）**：给 `2026-09-17-ui-reference-survey.md` 补/改名一节 `## Proposal`，还是在 [.agents/notes/README.md](notes/README.md) 里为「证据记录型」笔记写明例外？两条都动到决策记录或格式标准，无人值守期间没碰。
-- **README 里程碑表要不要补 M5 行**（`winget` 万能接入），补则中英两份同改。
-- **应用图标**：是否现在就用 Tauri 默认图标凑合到 M5，或提前做一版。
-- **两个 commit 还在本地**（`a05c186` 及其后的 docs 落盘提交；远端仍是 `097e941`）：push 是对外动作，无人值守期间不自选。
-- **M1 会话由谁拉起**：配方 `pi --model opencode-go/deepseek-v4.1-flash --thinking max -p "/skill:upkeeper-handoff 无人值守"`（已用 `pi --list-models deepseek` 确认该 provider 与模型存在，`max` 档在其 `thinkingLevelMap` 里）。没自选：它会以无界面方式长时间改仓库并消耗额度，属于「涉外」，按引用规则留给用户拍板。
+（空：2026-09-18 由用户逐条确认完毕 —— 调研笔记改名、push、M1 由用户自己起会话、DESIGN 冻结、打包与窗口身份、Tailwind 单文件、README 补 M5、图标凑合到 M5、顺手修正的文案，全部保留。）
 
 ## 自主决定
 
@@ -60,7 +54,7 @@
 - **crates 用 rsproxy 镜像而不是每次导出代理**：镜像不受代理端口漂移影响。改回：删掉 `%USERPROFILE%\.cargo\config.toml`。
 - **脚手架合并进既有目录，不新建子工程**；窗口 1080×720（最小 760×520）保留系统标题栏；标识符 `com.jesvn.upkeep`；bundle 目标 `nsis` + `msi`；`crate-type` 只留 `rlib`（去掉移动端入口）。改回：都是配置文件里的一两行。
 - **门禁脚本按各自文档实现**：`doc-budgets` 从 `docs/AGENTS.md` 解析上限表（避免上限有两份），`check-links` 复刻 GitHub 的 slug 规则，`notes-format` 按 `notes/README.md` 强制必需小节 —— 所以它对调研笔记报红而不是放过。
-- **顺手修正的事实性文案**：README 双语的「六个面板」→「七个面板」（[docs/ui.md](../docs/ui.md) 是七个）、[docs/environment.md](../docs/environment.md) 的工具链与磁盘实测行、[pre-push skill](skills/upkeeper-pre-push-checks/SKILL.md) 里「M0 尚未创建 `Cargo.toml`」的段落、[scripts/README.md](../scripts/README.md) 里「CJK 按一个词计」的错述。
+- **顺手修正的事实性文案**（2026-09-18 用户确认保留）：README 双语的「六个面板」→「七个面板」（[docs/ui.md](../docs/ui.md) 是七个）、[docs/environment.md](../docs/environment.md) 的工具链与磁盘实测行、[pre-push skill](skills/upkeeper-pre-push-checks/SKILL.md) 里「M0 尚未创建 `Cargo.toml`」的段落、[scripts/README.md](../scripts/README.md) 里「CJK 按一个词计」的错述。
 
 ## 下一步
 

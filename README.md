@@ -95,6 +95,7 @@ Core（Rust）    config → scan → plan → exec → verify → clean → his
 | **M2** | 批量更新（自更新 CLI + npm 全局）+ 实时进度 + 代理注入 | `omp` / `pi` 一键升级；父进程无代理残留；失败隔离生效 |
 | **M3** | 清理引擎 + 回滚 | 清单可核对；回收量可量化；登录态与当前版本零误删 |
 | **M4** | Chocolatey（UAC）+ 桌面应用跳转 + 绿色软件链接 + 设置页 | 提权能完成；桌面应用只提醒不代跑 |
+| **M5** | 万能接入：管理器表（winget 优先）+ `declarative` 形式 + 发现候选 | winget 可升级的应用一键纳管；加应用只改配置；发现结果不写盘直到用户确认 |
 
 证据要求见 [docs/testing.md](docs/testing.md)，完整验收见 [DESIGN.md](DESIGN.md#8-里程碑与验收标准)。
 
